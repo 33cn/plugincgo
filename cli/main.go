@@ -8,10 +8,10 @@ package main
 
 import (
 	_ "github.com/33cn/chain33/system"
-	"github.com/33cn/plugin/cli/buildflags"
-	_ "github.com/33cn/plugin/plugin"
+	_ "github.com/33cn/plugincgo/plugin"
 
 	"github.com/33cn/chain33/util/cli"
+	"github.com/33cn/plugincgo/cli/buildflags"
 )
 
 func main() {
@@ -19,5 +19,4 @@ func main() {
 		buildflags.RPCAddr = "http://localhost:8801"
 	}
 	cli.Run(buildflags.RPCAddr, buildflags.ParaName)
-
 }
