@@ -11,11 +11,14 @@
 # Output of the go coverage tool, specifically when used with LiteIDE
 *.out
 tool
-chain33
-chain33-cli
+/build/chain33
+/build/chain33-cli
 build/logs
 build/datadir
 build/wallet
+/chain33
+/chain33-cli
+/cli/cli
 /logs
 /datadir
 /wallet
