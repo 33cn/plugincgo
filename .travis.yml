@@ -17,6 +17,7 @@ jobs:
         - go get -u mvdan.cc/sh/cmd/shfmt
         - go get -u mvdan.cc/sh/cmd/gosh
       script:
+        - make install
         - make checkgofmt && make fmt_go
         - make linter
 
@@ -24,6 +25,7 @@ jobs:
       go: "1.9.x"
       install: skip
       script:
+        - make install
         - make test
 
     - stage: auto-test
@@ -31,19 +33,18 @@ jobs:
       install: skip
       before_script: make build_ci
       script:
+        - make install
         - make autotest dapp=all
 
     - stage: coverage
       if: branch = master
       go: "1.9.x"
-      before_install:
-        - go get -t -v ./...
       install: skip
       script:
+        - make install
         - make coverage
       after_success:
         - bash <(curl -s https://codecov.io/bash)
-
 
     - stage: deploy
       if: env(DAPP) IS present
@@ -63,4 +64,5 @@ jobs:
         - sudo mv docker-compose /usr/local/bin
       before_script: make build_ci
       script:
+        - make install
         - make docker-compose DAPP=${DAPP} && make docker-compose-down DAPP=${DAPP} && make clean
