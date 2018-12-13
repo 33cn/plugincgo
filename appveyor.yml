@@ -2,7 +2,7 @@ version: "{build}"
 
 # Source Config
 
-clone_folder: c:\gopath\src\github.com\33cn\plugin
+clone_folder: c:\gopath\src\github.com\33cn\plugincgo
 
 # Build host
 
