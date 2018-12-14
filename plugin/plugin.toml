@@ -1,0 +1,18 @@
+# type字段仅支持 consensus  dapp store
+[dapp-ticket]
+gitrepo = "github.com/33cn/plugin/plugin/dapp/ticket"
+
+[consensus-ticket]
+gitrepo = "github.com/33cn/plugin/plugin/consensus/ticket"
+
+[dapp-retrieve]
+gitrepo = "github.com/33cn/plugin/plugin/dapp/retrieve"
+
+[dapp-hashlock]
+gitrepo = "github.com/33cn/plugin/plugin/dapp/hashlock"
+
+[dapp-token]
+gitrepo = "github.com/33cn/plugin/plugin/dapp/token"
+
+[dapp-trade]
+gitrepo = "github.com/33cn/plugin/plugin/dapp/trade"
