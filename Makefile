@@ -154,7 +154,7 @@ protobuf: ## Generate protbuf file of types package
 	@find ./plugin/dapp -maxdepth 2 -type d  -name proto -exec make -C {} \;
 
 install:
-	@find plugin -depth 2 -type d -not -path "*/init" -exec make -C {} install \;
+	@find plugin -path "*/*/*" -maxdepth 2 -type d -not -path "*/init" -exec make -C {} install \;
 
 depends: ## Generate depends file of types package
 	@find ./plugin/dapp -maxdepth 2 -type d  -name cmd -exec make -C {} OUT="$(MKDIR)build/ci" FLAG= \;
