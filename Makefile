@@ -6,13 +6,15 @@
 # ...
 
 CLI := build/chain33-cli
-REPO := plugincgo
-SRC_CLI := github.com/33cn/${REPO}/cli
+REPONAME := plugincgo
+REPO := github.com/33cn/plugincgo
+SRC_CLI := ${REPO}/cli
 APP := build/chain33
 CHAIN33=github.com/33cn/chain33
+plugin=github.com/33cn/plugin
 CHAIN33_PATH=vendor/${CHAIN33}
 LDFLAGS := -ldflags "-w -s"
-PKG_LIST_VET := `go list ./... | grep -v "vendor" | grep -v plugincgo/dapp/evm/executor/vm/common/crypto/bn256`
+PKG_LIST_VET := `go list ./... | grep -v "vendor"`
 PKG_LIST := `go list ./... | grep -v "vendor" | grep -v "chain33/test" | grep -v "mocks" | grep -v "pbft"`
 PKG_LIST_INEFFASSIGN= `go list -f {{.Dir}} ./... | grep -v "vendor"`
 BUILD_FLAGS = -ldflags "-X github.com/33cn/chain33/common/version.GitCommit=`git rev-parse --short=8 HEAD`"
@@ -58,15 +60,17 @@ autotest_tick: autotest ## run with ticket mining
 	&& cd gitlabci && bash ./gitlab-ci-autotest.sh build && cd ../../../
 
 update:
-	rm -rf ${CHAIN33_PATH}
-	git clone --depth 1 -b ${b} https://${CHAIN33}.git ${CHAIN33_PATH}
-	rm -rf vendor/${CHAIN33}/.git
-	rm -rf vendor/${CHAIN33}/vendor/github.com/apache/thrift/tutorial/erl/
-	cp -Rf vendor/${CHAIN33}/vendor/* vendor/
-	rm -rf vendor/${CHAIN33}/vendor
+	go get -u -v github.com/kardianos/govendor
+	rm -rf vendor/${CHAIN33}
+	rm -rf vendor/${plugin}
+	git clone --depth 1 -b master https://${plugin}.git vendor/${plugin}
+	rm -rf vendor/${plugin}/.git
+	cp -Rf vendor/${plugin}/vendor/* vendor/
+	rm -rf vendor/${plugin}/vendor
+
 	govendor init
-	go build -i -o tool github.com/33cn/${REPO}/vendor/github.com/33cn/chain33/cmd/tools
-	./tool import --path "plugin" --packname "github.com/33cn/${REPO}/plugin" --conf ""
+	go build -i -o tool ${REPO}/vendor/github.com/33cn/chain33/cmd/tools
+	./tool import --path "plugin" --packname ${REPO}/plugin --conf "plugin/plugin.toml"
 
 updatevendor:
 	govendor add +e
@@ -227,7 +231,7 @@ auto_ci: clean fmt_proto fmt_shell protobuf
 
 
 addupstream:
-	git remote add upstream https://github.com/33cn/${REPO}.git
+	git remote add upstream https://${REPO}.git
 	git remote -v
 
 sync:
@@ -252,7 +256,7 @@ push:
 pull:
 	@remotelist=$$(git remote | grep ${name});if [ -z $$remotelist ]; then \
 		echo ${remotelist}; \
-		git remote add ${name} https://github.com/${name}/${REPO}.git ; \
+		git remote add ${name} https://github.com/${name}/${REPONAME}.git ; \
 	fi;
 	git fetch ${name}
 	git checkout ${name}/${b}
