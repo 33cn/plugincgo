@@ -9,6 +9,7 @@ RUN apt-get install -y libtool
 RUN apt-get install -y flex bison
 RUN apt-get install -y make
 RUN apt-get install -y wget
+RUN apt-get install -y git
 
 RUN wget -P /tmp https://mirrors.ustc.edu.cn/golang/go1.10.2.linux-amd64.tar.gz
 
@@ -22,8 +23,9 @@ RUN mkdir -p "$GOPATH/src" "$GOPATH/bin" && chmod -R 777 "$GOPATH" \
 
 WORKDIR $GOPATH/src/github.com/33cn/plugincgo
 COPY . ./
+RUN git clone https://github.com/33cn/libbyz-go.git $GOPATH/src/github.com/33cn/libbyz-go
 ENV workspace $GOPATH/src/github.com/33cn/plugincgo/plugin/consensus/pbftlibbyz
-ENV bftpath $GOPATH/src/github.com/33cn/plugincgo/vendor/github.com/33cn/libbyz-go
+ENV bftpath $GOPATH/src/github.com/33cn/libbyz-go
 
 WORKDIR $bftpath/bft/sfslite-1.2
 RUN autoreconf -i
