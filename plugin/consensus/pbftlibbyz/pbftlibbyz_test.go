@@ -36,6 +36,8 @@ var (
 	random       *rand.Rand
 	transactions []*types.Transaction
 	txSize       = 1000
+	index = flag.String("index","1","replica number")
+
 )
 
 func init() {
@@ -47,8 +49,8 @@ func init() {
 	log.SetLogLevel("info")
 }
 func TestPbftlibbyz(t *testing.T) {
-	index := os.Args[1]
-	q, chain, p2pnet, s, mem, exec, cs, wallet := initEnvpbftlibbyz(index)
+	flag.Parse()
+	q, chain, p2pnet, s, mem, exec, cs, wallet := initEnvpbftlibbyz(*index)
 	defer chain.Close()
 	defer mem.Close()
 	defer p2pnet.Close()
@@ -59,7 +61,7 @@ func TestPbftlibbyz(t *testing.T) {
 	defer wallet.Close()
 	time.Sleep(5 * time.Second)
 
-	if index == "5" {
+	if (*index) == "5" {
 		time.Sleep(2 * time.Second)
 		sendReplyList(q)
 	} else {
