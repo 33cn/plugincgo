@@ -36,8 +36,7 @@ var (
 	random       *rand.Rand
 	transactions []*types.Transaction
 	txSize       = 1000
-	index = flag.String("index","1","replica number")
-
+	index        = flag.String("index", "1", "replica number")
 )
 
 func init() {
