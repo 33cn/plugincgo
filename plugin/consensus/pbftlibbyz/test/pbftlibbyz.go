@@ -2,7 +2,7 @@
 // Use of this source code is governed by a BSD-style
 // license that can be found in the LICENSE file.
 
-package pbftlibbyz
+package main
 
 import (
 	"flag"
@@ -10,7 +10,6 @@ import (
 	"math/rand"
 	"os"
 	"strconv"
-	"testing"
 	"time"
 
 	"github.com/33cn/chain33/blockchain"
@@ -26,6 +25,7 @@ import (
 	cty "github.com/33cn/chain33/system/dapp/coins/types"
 	"github.com/33cn/chain33/types"
 	"github.com/33cn/chain33/wallet"
+	"github.com/33cn/plugincgo/plugin/consensus/pbftlibbyz"
 
 	_ "github.com/33cn/chain33/system"
 	_ "github.com/33cn/plugincgo/plugin/dapp/init"
@@ -47,7 +47,8 @@ func init() {
 	random = rand.New(rand.NewSource(types.Now().UnixNano()))
 	log.SetLogLevel("info")
 }
-func TestPbftlibbyz(t *testing.T) {
+
+func main() {
 	flag.Parse()
 	q, chain, p2pnet, s, mem, exec, cs, wallet := initEnvpbftlibbyz(*index)
 	defer chain.Close()
@@ -69,10 +70,10 @@ func TestPbftlibbyz(t *testing.T) {
 	clearTestData()
 }
 
-func initEnvpbftlibbyz(index string) (queue.Queue, *blockchain.BlockChain, *p2p.P2p, queue.Module, queue.Module, *executor.Executor, queue.Module, queue.Module) {
+func initEnvpbftlibbyz(indexNumber string) (queue.Queue, *blockchain.BlockChain, *p2p.P2p, queue.Module, queue.Module, *executor.Executor, queue.Module, queue.Module) {
 	var q = queue.New("channel")
 	flag.Parse()
-	cfg, sub := types.InitCfg("chain33.test" + index + ".toml")
+	cfg, sub := types.InitCfg("chain33.test" + indexNumber + ".toml")
 	types.Init(cfg.Title, cfg)
 	chain := blockchain.New(cfg.BlockChain)
 	chain.SetQueueClient(q.Client())
@@ -83,7 +84,7 @@ func initEnvpbftlibbyz(index string) (queue.Queue, *blockchain.BlockChain, *p2p.
 	types.SetMinFee(0)
 	s := store.New(cfg.Store, sub.Store)
 	s.SetQueueClient(q.Client())
-	cs := Newpbftlibbyz(cfg.Consensus, sub.Consensus["pbftlibbyz"])
+	cs := pbftlibbyz.Newpbftlibbyz(cfg.Consensus, sub.Consensus["pbftlibbyz"])
 	cs.SetQueueClient(q.Client())
 	p2pnet := p2p.New(cfg.P2P)
 	p2pnet.SetQueueClient(q.Client())

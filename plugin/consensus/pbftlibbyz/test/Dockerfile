@@ -23,7 +23,7 @@ RUN mkdir -p "$GOPATH/src" "$GOPATH/bin" && chmod -R 777 "$GOPATH" \
 
 WORKDIR $GOPATH/src/github.com/33cn/plugincgo
 COPY . ./
-RUN git clone https://github.com/33cn/libbyz-go.git $GOPATH/src/github.com/33cn/libbyz-go
+RUN git clone https://github.com/chasingegg/libbyz-go.git $GOPATH/src/github.com/33cn/libbyz-go
 ENV workspace $GOPATH/src/github.com/33cn/plugincgo/plugin/consensus/pbftlibbyz
 ENV bftpath $GOPATH/src/github.com/33cn/libbyz-go
 
@@ -45,7 +45,7 @@ RUN sed -i '418s/^.*$/  th_assert(sizeof(t.tv_sec) <= sizeof(long), "tv_sec is t
 && sed -i '420s/^.*$/  long int_bits = sizeof(long)*8;/' Node.cc \
 && make CPPFLAGS="-I../gmp -I../sfs/include/sfslite -g -Wall -DRECOVERY -fpermissive -DHAVE_GMP_CXX_OPS"
 
-WORKDIR $workspace
-RUN go test -c
+WORKDIR $workspace/test
+RUN go build
 
-ENTRYPOINT [ "./pbftlibbyz.test" ]
+ENTRYPOINT [ "./test" ]

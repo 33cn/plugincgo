@@ -5,8 +5,7 @@
 package pbftlibbyz
 
 import (
-	"time"
-
+	"flag"
 	"github.com/33cn/chain33/common/merkle"
 	"github.com/33cn/chain33/queue"
 	drivers "github.com/33cn/chain33/system/consensus"
@@ -14,6 +13,11 @@ import (
 	"github.com/33cn/chain33/types"
 	byzcli "github.com/33cn/libbyz-go/client"
 	byzreplica "github.com/33cn/libbyz-go/replica"
+	"time"
+)
+
+var (
+	configPath = flag.String("configPath", ".", "config path")
 )
 
 func init() {
@@ -78,8 +82,9 @@ func (client *Client) CreateBlock() {
 	// if !client.isPrimary {
 	// 	return
 	// }
-	var config = "./config"
-	var configPriv = "./priv_template"
+	flag.Parse()
+	var config = *configPath + "/config"
+	var configPriv = *configPath + "/priv_template"
 	if client.isClient {
 		byzcli.ByzInitClient(config, configPriv)
 	} else {
