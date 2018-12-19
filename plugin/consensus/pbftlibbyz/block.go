@@ -6,6 +6,8 @@ package pbftlibbyz
 
 import (
 	"flag"
+	"time"
+
 	"github.com/33cn/chain33/common/merkle"
 	"github.com/33cn/chain33/queue"
 	drivers "github.com/33cn/chain33/system/consensus"
@@ -13,7 +15,6 @@ import (
 	"github.com/33cn/chain33/types"
 	byzcli "github.com/33cn/libbyz-go/client"
 	byzreplica "github.com/33cn/libbyz-go/replica"
-	"time"
 )
 
 var (
