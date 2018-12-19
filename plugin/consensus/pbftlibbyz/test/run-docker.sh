@@ -8,4 +8,4 @@ docker run --net pbft-net --ip 172.172.0.4 --name replica-3 -dit --rm pbftlibbyz
 docker run --net pbft-net --ip 172.172.0.5 --name replica-4 -dit --rm pbftlibbyz -index=4 -configPath=".."
 docker run --net pbft-net --ip 172.172.0.6 --name client -dit --rm pbftlibbyz -index=5 -configPath=".."
 
-docker attach client
+docker logs -f -t client

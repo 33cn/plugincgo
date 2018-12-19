@@ -23,7 +23,7 @@ RUN mkdir -p "$GOPATH/src" "$GOPATH/bin" && chmod -R 777 "$GOPATH" \
 
 WORKDIR $GOPATH/src/github.com/33cn/plugincgo
 COPY . ./
-RUN git clone https://github.com/chasingegg/libbyz-go.git $GOPATH/src/github.com/33cn/libbyz-go
+RUN git clone https://github.com/33cn/libbyz-go.git $GOPATH/src/github.com/33cn/libbyz-go
 ENV workspace $GOPATH/src/github.com/33cn/plugincgo/plugin/consensus/pbftlibbyz
 ENV bftpath $GOPATH/src/github.com/33cn/libbyz-go
 
