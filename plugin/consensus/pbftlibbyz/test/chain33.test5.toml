@@ -53,16 +53,18 @@ verMax=119
 [mempool]
 name="timeline"
 poolCacheSize=10240
-minTxFee=100000
+minTxFee=0
 
 [rpc]
-jrpcBindAddr="localhost:8801"
-grpcBindAddr="localhost:8802"
-whitelist=["127.0.0.1"]
+jrpcBindAddr=":8801"
+grpcBindAddr=":8802"
+whitelist=["*"]
+jrpcFuncWhitelist=["*"]
+grpcFuncWhitelist=["*"]
 
 [consensus]
 name="pbftlibbyz"
-minerstart=false
+minerstart=true
 
 [mver.consensus]
 fundKeyAddr = "1BQXS6TxaYYG5mADaWij4AxhZZUTpw95a5"
@@ -105,7 +107,7 @@ enableMavlPrefix=false
 enableMVCC=false
 
 [wallet]
-minFee=100000
+minFee=0
 driver="leveldb"
 dbPath="wallet"
 dbCache=16
@@ -116,8 +118,8 @@ minerdisable=false
 minerwhitelist=["*"]
 
 [exec]
-isFree=false
-minExecFee=100000
+isFree=true
+minExecFee=0
 enableStat=false
 enableMVCC=false
 alias=["token1:token","token2:token","token3:token"]

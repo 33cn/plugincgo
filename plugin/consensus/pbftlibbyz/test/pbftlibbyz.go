@@ -21,6 +21,7 @@ import (
 	"github.com/33cn/chain33/mempool"
 	"github.com/33cn/chain33/p2p"
 	"github.com/33cn/chain33/queue"
+	"github.com/33cn/chain33/rpc"
 	"github.com/33cn/chain33/store"
 	cty "github.com/33cn/chain33/system/dapp/coins/types"
 	"github.com/33cn/chain33/types"
@@ -50,30 +51,9 @@ func init() {
 
 func main() {
 	flag.Parse()
-	q, chain, p2pnet, s, mem, exec, cs, wallet := initEnvpbftlibbyz(*index)
-	defer chain.Close()
-	defer mem.Close()
-	defer p2pnet.Close()
-	defer exec.Close()
-	defer s.Close()
-	defer cs.Close()
-	defer q.Close()
-	defer wallet.Close()
-	time.Sleep(5 * time.Second)
 
-	if (*index) == "5" {
-		time.Sleep(2 * time.Second)
-		sendReplyList(q)
-	} else {
-		time.Sleep(60 * time.Second)
-	}
-	clearTestData()
-}
-
-func initEnvpbftlibbyz(indexNumber string) (queue.Queue, *blockchain.BlockChain, *p2p.P2p, queue.Module, queue.Module, *executor.Executor, queue.Module, queue.Module) {
 	var q = queue.New("channel")
-	flag.Parse()
-	cfg, sub := types.InitCfg("chain33.test" + indexNumber + ".toml")
+	cfg, sub := types.InitCfg("chain33.test" + *index + ".toml")
 	types.Init(cfg.Title, cfg)
 	chain := blockchain.New(cfg.BlockChain)
 	chain.SetQueueClient(q.Client())
@@ -90,9 +70,21 @@ func initEnvpbftlibbyz(indexNumber string) (queue.Queue, *blockchain.BlockChain,
 	p2pnet.SetQueueClient(q.Client())
 	walletm := wallet.New(cfg.Wallet, sub.Wallet)
 	walletm.SetQueueClient(q.Client())
+	rpcapi := rpc.New(cfg.RPC)
+	rpcapi.SetQueueClient(q.Client())
 
-	return q, chain, p2pnet, s, mem, exec, cs, walletm
+	defer chain.Close()
+	defer mem.Close()
+	defer p2pnet.Close()
+	defer exec.Close()
+	defer s.Close()
+	defer cs.Close()
+	defer q.Close()
+	defer walletm.Close()
+	defer rpcapi.Close()
 
+	q.Start()
+	clearTestData()
 }
 
 func sendReplyList(q queue.Queue) {
