@@ -35,7 +35,7 @@ func TestPbft(t *testing.T) {
 		log.Fatal(err)
 	}
 	fmt.Println("Docker build success!")
-	
+
 	//启动5个docker节点
 	cmd := exec.Command("/bin/sh", "-c", "./test/run-docker.sh")
 	stdout, err := cmd.StdoutPipe()
