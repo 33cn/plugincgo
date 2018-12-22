@@ -1,4 +1,4 @@
-#/bin/sh
+#!/bin/sh
 
 docker rm replica-1 -f
 docker rm replica-2 -f

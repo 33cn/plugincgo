@@ -172,7 +172,7 @@ func TestPbft(t *testing.T) {
 			}
 			time.Sleep(3 * time.Second)
 		}
-		fmt.Println("\n********* Finish one transaction! *********")
+		fmt.Println("\n********* Get tx, finish one transaction! *********")
 	}
 	// 显示所有账户的余额
 	fmt.Println("\n********** Get Accounts! ********")
