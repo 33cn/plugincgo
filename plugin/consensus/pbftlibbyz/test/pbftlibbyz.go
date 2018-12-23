@@ -9,12 +9,8 @@ import (
 	"fmt"
 	"math/rand"
 	"os"
-	"strconv"
-	"time"
 
 	"github.com/33cn/chain33/blockchain"
-	"github.com/33cn/chain33/common"
-	"github.com/33cn/chain33/common/crypto"
 	"github.com/33cn/chain33/common/limits"
 	"github.com/33cn/chain33/common/log"
 	"github.com/33cn/chain33/executor"
@@ -23,7 +19,6 @@ import (
 	"github.com/33cn/chain33/queue"
 	"github.com/33cn/chain33/rpc"
 	"github.com/33cn/chain33/store"
-	cty "github.com/33cn/chain33/system/dapp/coins/types"
 	"github.com/33cn/chain33/types"
 	"github.com/33cn/chain33/wallet"
 	"github.com/33cn/plugincgo/plugin/consensus/pbftlibbyz"
@@ -34,10 +29,8 @@ import (
 )
 
 var (
-	random       *rand.Rand
-	transactions []*types.Transaction
-	txSize       = 1000
-	index        = flag.String("index", "1", "replica number")
+	random *rand.Rand
+	index  = flag.String("index", "1", "replica number")
 )
 
 func init() {
@@ -85,58 +78,6 @@ func main() {
 
 	q.Start()
 	clearTestData()
-}
-
-func sendReplyList(q queue.Queue) {
-	client := q.Client()
-	client.Sub("mempool")
-	var count int
-	for msg := range client.Recv() {
-		if msg.Ty == types.EventTxList {
-			count++
-			createReplyList("test" + strconv.Itoa(count))
-			msg.Reply(client.NewMessage("consensus", types.EventReplyTxList,
-				&types.ReplyTxList{Txs: transactions}))
-			if count == 5 {
-				time.Sleep(5 * time.Second)
-				break
-			}
-		}
-	}
-}
-
-func getprivkey(key string) crypto.PrivKey {
-	cr, err := crypto.New(types.GetSignName("", types.SECP256K1))
-	if err != nil {
-		panic(err)
-	}
-	bkey, err := common.FromHex(key)
-	if err != nil {
-		panic(err)
-	}
-	priv, err := cr.PrivKeyFromBytes(bkey)
-	if err != nil {
-		panic(err)
-	}
-	return priv
-}
-
-func createReplyList(account string) {
-	var result []*types.Transaction
-	for j := 0; j < txSize; j++ {
-		//tx := &types.Transaction{}
-		val := &cty.CoinsAction_Transfer{Transfer: &types.AssetsTransfer{Amount: 10}}
-		action := &cty.CoinsAction{Value: val, Ty: cty.CoinsActionTransfer}
-		tx := &types.Transaction{Execer: []byte("coins"), Payload: types.Encode(action), Fee: 0}
-		tx.To = "14qViLJfdGaP4EeHnDyJbEGQysnCpwn1gZ"
-
-		tx.Nonce = random.Int63()
-
-		tx.Sign(types.SECP256K1, getprivkey("CC38546E9E659D15E6B4893F0AB32A06D103931A8230B0BDE71459D2B27D6944"))
-		result = append(result, tx)
-	}
-	//result = append(result, tx)
-	transactions = result
 }
 
 func clearTestData() {

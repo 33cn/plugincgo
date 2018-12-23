@@ -29,12 +29,12 @@ func rpc(method string, params, res interface{}) (e error) {
 }
 func TestPbft(t *testing.T) {
 	// 构建docker镜像
-	bi := exec.Command("/bin/sh", "-c", "./test/build-docker.sh")
-	err := bi.Run()
-	if err != nil {
-		log.Fatal(err)
-	}
-	fmt.Println("Docker build success!")
+	// bi := exec.Command("/bin/sh", "-c", "./test/build-docker.sh")
+	// err := bi.Run()
+	// if err != nil {
+	// 	log.Fatal(err)
+	// }
+	// fmt.Println("Docker build success!")
 
 	//启动5个docker节点
 	cmd := exec.Command("/bin/sh", "-c", "./test/run-docker.sh")
@@ -60,7 +60,7 @@ func TestPbft(t *testing.T) {
 
 	for i := 0; i < 20; i++ {
 		rpc("Chain33.IsSync", new(types.ReqNil), &res)
-		if res.(bool) == true {
+		if res.(bool) {
 			fmt.Println("********* IsSync! *********")
 			break
 		}
@@ -178,6 +178,23 @@ func TestPbft(t *testing.T) {
 	fmt.Println("\n********** Get Accounts! ********")
 	rpc("Chain33.GetAccounts", &types.ReqNil{}, &res)
 	fmt.Println(res)
+
+	// 正确结果应该是bob余额20000000000，alex余额为0
+	for _, value := range res.(map[string]interface{})["wallets"].([]interface{}) {
+		if value.(map[string]interface{})["label"] == "alex" {
+			if value.(map[string]interface{})["acc"].(map[string]interface{})["balance"].(float64) != 0 {
+				fmt.Println(value.(map[string]interface{})["acc"].(map[string]interface{})["balance"])
+				log.Fatal("wrong on alex balance!")
+			}
+		}
+		if value.(map[string]interface{})["label"] == "bob" {
+			if value.(map[string]interface{})["acc"].(map[string]interface{})["balance"].(float64) != 20000000000 {
+				fmt.Println(value.(map[string]interface{})["acc"].(map[string]interface{})["balance"])
+				log.Fatal("wrong on bob balance!")
+			}
+		}
+	}
+	fmt.Println("********* Balance Check Passed! *********")
 
 	err = exec.Command("/bin/sh", "-c", "./test/rm-docker.sh").Run()
 	if err != nil {
