@@ -29,12 +29,12 @@ func rpc(method string, params, res interface{}) (e error) {
 }
 func TestPbft(t *testing.T) {
 	// 构建docker镜像
-	// bi := exec.Command("/bin/sh", "-c", "./test/build-docker.sh")
-	// err := bi.Run()
-	// if err != nil {
-	// 	log.Fatal(err)
-	// }
-	// fmt.Println("Docker build success!")
+	bi := exec.Command("/bin/sh", "-c", "./test/build-docker.sh")
+	err := bi.Run()
+	if err != nil {
+		log.Fatal(err)
+	}
+	fmt.Println("Docker build success!")
 
 	//启动5个docker节点
 	cmd := exec.Command("/bin/sh", "-c", "./test/run-docker.sh")
