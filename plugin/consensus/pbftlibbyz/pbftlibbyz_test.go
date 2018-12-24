@@ -178,10 +178,10 @@ func TestPbft(t *testing.T) {
 	// 正确结果应该是bob余额20000000000，alex余额为0，会进行自动检查
 	for _, value := range res.(map[string]interface{})["wallets"].([]interface{}) {
 		if value.(map[string]interface{})["label"] == "alex" {
-			assert.Equal(t, value.(map[string]interface{})["acc"].(map[string]interface{})["balance"].(float64), 0)
+			assert.Equal(t, value.(map[string]interface{})["acc"].(map[string]interface{})["balance"].(float64), float64(0))
 		}
 		if value.(map[string]interface{})["label"] == "bob" {
-			assert.Equal(t, value.(map[string]interface{})["acc"].(map[string]interface{})["balance"].(float64), 20000000000)
+			assert.Equal(t, value.(map[string]interface{})["acc"].(map[string]interface{})["balance"].(float64), float64(20000000000))
 		}
 	}
 	fmt.Println("********* Balance Check Passed! *********")
