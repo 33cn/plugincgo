@@ -16,6 +16,7 @@ tool
 build/logs
 build/datadir
 build/wallet
+build/fork-config
 /chain33
 /chain33-cli
 /cli/cli

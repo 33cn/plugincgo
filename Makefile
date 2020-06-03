@@ -1,83 +1,66 @@
 
-# golang1.9 or latest
+# golang1.12 or latest
 # 1. make help
 # 2. make dep
 # 3. make build
 # ...
-
+export GO111MODULE=on
 CLI := build/chain33-cli
-REPONAME := plugincgo
-REPO := github.com/33cn/plugincgo
-SRC_CLI := ${REPO}/cli
+SRC_CLI := github.com/33cn/plugin/cli
 APP := build/chain33
-CHAIN33=github.com/33cn/chain33
-plugin=github.com/33cn/plugin
-CHAIN33_PATH=vendor/${CHAIN33}
-LDFLAGS := -ldflags "-w -s"
-PKG_LIST_VET := `go list ./... | grep -v "vendor"`
-PKG_LIST := `go list ./... | grep -v "vendor" | grep -v "chain33/test" | grep -v "mocks" | grep -v "pbft"`
-PKG_LIST_INEFFASSIGN= `go list -f {{.Dir}} ./... | grep -v "vendor"`
 BUILD_FLAGS = -ldflags "-X github.com/33cn/chain33/common/version.GitCommit=`git rev-parse --short=8 HEAD`"
+LDFLAGS := -ldflags "-w -s"
 MKPATH=$(abspath $(lastword $(MAKEFILE_LIST)))
 MKDIR=$(dir $(MKPATH))
-DAPP := ""
-PROJ := "build"
+proj := "build"
 .PHONY: default dep all build release cli linter race test fmt vet bench msan coverage coverhtml docker docker-compose protobuf clean help autotest
 
-default: build depends
+default: depends build
 
-build:
-	@go build $(BUILD_FLAGS) -v -i -o $(APP)
-	@go build -v -i -o $(CLI) $(SRC_CLI)
+build: depends
+	go build $(BUILD_FLAGS) -v -i -o $(APP)
+	go build $(BUILD_FLAGS) -v -i -o $(CLI) $(SRC_CLI)
+	go build $(BUILD_FLAGS) -v -i -o build/fork-config github.com/33cn/plugin/cli/fork_config/
 	@cp chain33.toml build/
+
 
 build_ci: depends ## Build the binary file for CI
 	@go build -v -i -o $(CLI) $(SRC_CLI)
 	@go build $(BUILD_FLAGS) -v -o $(APP)
 	@cp chain33.toml build/
 
+
 para:
 	@go build -v -o build/$(NAME) -ldflags "-X $(SRC_CLI)/buildflags.ParaName=user.p.$(NAME). -X $(SRC_CLI)/buildflags.RPCAddr=http://localhost:8901" $(SRC_CLI)
 
 vet:
-	@go vet ${PKG_LIST_VET}
+	@go vet ./...
 
 autotest: ## build autotest binary
-	@cd build/autotest && bash ./build.sh && cd ../../
+	@cd build/autotest && bash ./run.sh build && cd ../../
 	@if [ -n "$(dapp)" ]; then \
-		rm -rf build/autotest/local \
-		&& cp -r $(CHAIN33_PATH)/build/autotest/local $(CHAIN33_PATH)/build/autotest/*.sh build/autotest/ \
-		&& cd build/autotest && bash ./copy-autotest.sh local && cd local && bash ./local-autotest.sh $(dapp) && cd ../../../; fi
+	cd build/autotest && bash ./run.sh local $(dapp) && cd ../../; fi
 autotest_ci: autotest ## autotest ci
-	@rm -rf build/autotest/jerkinsci \
-	&& cp -r $(CHAIN33_PATH)/build/autotest/jerkinsci $(CHAIN33_PATH)/build/autotest/*.sh build/autotest/ \
-	&& cd build/autotest && bash ./copy-autotest.sh jerkinsci/temp$(proj) \
-	&& cd jerkinsci && bash ./jerkins-ci-autotest.sh $(proj) && cd ../../../
+	@cd build/autotest && bash ./run.sh jerkinsci $(proj) && cd ../../
 autotest_tick: autotest ## run with ticket mining
-	@rm -rf build/autotest/gitlabci \
-	&& cp -r $(CHAIN33_PATH)/build/autotest/gitlabci $(CHAIN33_PATH)/build/autotest/*.sh build/autotest/ \
-	&& cd build/autotest && bash ./copy-autotest.sh gitlabci \
-	&& cd gitlabci && bash ./gitlab-ci-autotest.sh build && cd ../../../
+	@cd build/autotest && bash ./run.sh gitlabci build && cd ../../
 
-update:
-	go get -u -v github.com/kardianos/govendor
-	rm -rf vendor/${CHAIN33}
-	rm -rf vendor/${plugin}
-	git clone --depth 1 -b master https://${plugin}.git vendor/${plugin}
-	rm -rf vendor/${plugin}/.git
-	cp -Rf vendor/${plugin}/vendor/* vendor/
-	rm -rf vendor/${plugin}/vendor
-
-	govendor init
-	go build -i -o tool ${REPO}/vendor/github.com/33cn/chain33/cmd/tools
-	./tool import --path "plugin" --packname ${REPO}/plugin --conf "plugin/plugin.toml"
-
-updatevendor:
-	govendor add +e
-	govendor fetch -v +m
-
+update: ## version 可以是git tag打的具体版本号,也可以是commit hash, 什么都不填的情况下默认从master分支拉取最新版本
+	@if [ -n "$(version)" ]; then   \
+	go get github.com/33cn/chain33@${version}  ; \
+	else \
+	go get github.com/33cn/chain33@master ;fi
+	@go mod tidy
 dep:
-	dep init -v
+	@go get github.com/golangci/golangci-lint/cmd/golangci-lint@v1.18.0
+	@go get -u golang.org/x/tools/cmd/goimports
+	@go get -u github.com/mitchellh/gox
+	@go get -u github.com/vektra/mockery/.../
+	@go get -u mvdan.cc/sh/cmd/shfmt
+	@go get -u mvdan.cc/sh/cmd/gosh
+	@git checkout go.mod go.sum
+	@apt install clang-format
+	@apt install shellcheck
 
 linter: vet ineffassign ## Use gometalinter check code, ignore some unserious warning
 	@./golinter.sh "filter"
@@ -88,16 +71,16 @@ linter_test: ## Use gometalinter check code, for local test
 	@find . -name '*.sh' -not -path "./vendor/*" | xargs shellcheck
 
 ineffassign:
-	@ineffassign -n ${PKG_LIST_INEFFASSIGN}
+	@golangci-lint  run --no-config --issues-exit-code=1  --deadline=2m --disable-all   --enable=ineffassign -n ./...
 
 race: ## Run data race detector
-	@go test -race -short $(PKG_LIST)
+	@go test -parallel=8 -race -short `go list ./... | grep -v "pbft"`
 
 test: ## Run unittests
-	@go test -race $(PKG_LIST)
+	@go test -parallel=8 -race  `go list ./...| grep -v "pbft"`
 
 testq: ## Run unittests
-	@go test $(PKG_LIST)
+	@go test -parallel=8 `go list ./... | grep -v "pbft"`
 
 fmt: fmt_proto fmt_shell ## go fmt
 	@go fmt ./...
@@ -128,16 +111,23 @@ docker-compose: ## build docker-compose for chain33 run
 	@cd build && if ! [ -d ci ]; then \
 	 make -C ../ ; \
 	 fi; \
-	 cp chain33* Dockerfile  docker-compose* ci/ && cd ci/ && ./docker-compose-pre.sh run $(PROJ) $(DAPP)  && cd ../..
+	 cp chain33* Dockerfile  docker-compose.yml *.sh ci/ && cd ci/ && ./docker-compose-pre.sh run $(proj) $(dapp)  && cd ../..
 
 docker-compose-down: ## build docker-compose for chain33 run
 	@cd build && if [ -d ci ]; then \
-	 cp chain33* Dockerfile  docker-compose* ci/ && cd ci/ && ./docker-compose-pre.sh down $(PROJ) $(DAPP) && cd .. ; \
+	 cp chain33* Dockerfile  docker-compose* ci/ && cd ci/ && ./docker-compose-pre.sh down $(proj) $(dapp) && cd .. ; \
 	 fi; \
 	 cd ..
 
+metrics:## build docker-compose for chain33 metrics
+	@cd build && if ! [ -d ci ]; then \
+	 make -C ../ ; \
+	 fi; \
+	 cp chain33* Dockerfile  docker-compose.yml docker-compose-metrics.yml influxdb.conf *.sh ci/paracross/testcase.sh metrics/ && ./docker-compose-pre.sh run $(proj) metrics  && cd ../..
+
+
 fork-test: ## build fork-test for chain33 run
-	@cd build && cp chain33* Dockerfile system-fork-test.sh docker-compose* ci/ && cd ci/ && ./docker-compose-pre.sh forktest $(PROJ) $(DAPP) && cd ../..
+	@cd build && cp chain33* Dockerfile system-fork-test.sh docker-compose* ci/ && cd ci/ && ./docker-compose-pre.sh forktest $(proj) $(dapp) && cd ../..
 
 
 clean: ## Remove previous build
@@ -148,7 +138,9 @@ clean: ## Remove previous build
 	@rm -rf build/logs
 	@rm -rf build/autotest/autotest
 	@rm -rf build/ci
+	@rm -rf build/system-rpc-test.sh
 	@rm -rf tool
+	@cd build/metrics && find * -not -name readme.md | xargs rm -fr && cd ../..
 	@go clean
 
 proto:protobuf
@@ -157,12 +149,9 @@ protobuf: ## Generate protbuf file of types package
 #	@cd ${CHAIN33_PATH}/types/proto && ./create_protobuf.sh && cd ../..
 	@find ./plugin/dapp -maxdepth 2 -type d  -name proto -exec make -C {} \;
 
-install:
-	@find plugin -path "*/*/*" -maxdepth 2 -type d -not -path "*/init" -exec make -C {} install \;
-
 depends: ## Generate depends file of types package
 	@find ./plugin/dapp -maxdepth 2 -type d  -name cmd -exec make -C {} OUT="$(MKDIR)build/ci" FLAG= \;
-	@find ./vendor/github.com/33cn/chain33/system/dapp -maxdepth 2 -type d  -name cmd -exec make -C {} OUT="$(MKDIR)build/ci" FLAG= \;
+
 
 help: ## Display this help screen
 	@printf "Help doc:\nUsage: make [command]\n"
@@ -231,7 +220,7 @@ auto_ci: clean fmt_proto fmt_shell protobuf
 
 
 addupstream:
-	git remote add upstream https://${REPO}.git
+	git remote add upstream https://github.com/33cn/plugin.git
 	git remote -v
 
 sync:
@@ -256,7 +245,7 @@ push:
 pull:
 	@remotelist=$$(git remote | grep ${name});if [ -z $$remotelist ]; then \
 		echo ${remotelist}; \
-		git remote add ${name} https://github.com/${name}/${REPONAME}.git ; \
+		git remote add ${name} https://github.com/${name}/plugin.git ; \
 	fi;
 	git fetch ${name}
 	git checkout ${name}/${b}
@@ -288,4 +277,3 @@ webhook_auto_ci: clean fmt_proto fmt_shell protobuf
 webhook:
 	git checkout ${b}
 	make webhook_auto_ci name=${name} b=${b}
-
