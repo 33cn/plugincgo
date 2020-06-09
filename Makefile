@@ -111,7 +111,7 @@ docker-compose: ## build docker-compose for chain33 run
 	@cd build && if ! [ -d ci ]; then \
 	 make -C ../ ; \
 	 fi; \
-	 cp chain33* Dockerfile  docker-compose.yml *.sh ci/ && cd ci/ && ./docker-compose-pre.sh run $(proj) $(dapp)  && cd ../..
+	 mkdir ci && cp chain33* Dockerfile  docker-compose.yml *.sh ci/ && cd ci/ && ./docker-compose-pre.sh run $(proj) $(dapp)  && cd ../..
 
 docker-compose-down: ## build docker-compose for chain33 run
 	@cd build && if [ -d ci ]; then \
@@ -140,7 +140,6 @@ clean: ## Remove previous build
 	@rm -rf build/ci
 	@rm -rf build/system-rpc-test.sh
 	@rm -rf tool
-	@cd build/metrics && find * -not -name readme.md | xargs rm -fr && cd ../..
 	@go clean
 
 proto:protobuf
