@@ -1,7 +1,7 @@
 language: go
 go_import_path: github.com/33cn/plugincgo
 os: linux
-dist: xenial
+dist: bionic
 
 notifications:
   email: false
