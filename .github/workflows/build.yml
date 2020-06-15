@@ -1,0 +1,46 @@
+name: build
+on: [push,pull-request]
+
+jobs:
+  check_fmt:
+    runs-on:
+      - ubuntu-16.04
+      - ubuntu-18.04
+    steps:
+      - name: Set up Golang
+        uses: actions/setup-go@v2
+        with:
+          go-version: 1.13
+        id: go
+      - name: checkout
+        uses: actions/checkout@v1
+      - name: Intsall Golangci-lint
+        run: |
+          - go get -u golang.org/x/tools/cmd/goimports
+          - go get github.com/golangci/golangci-lint/cmd/golangci-lint@v1.18.0
+          - go get -u mvdan.cc/sh/cmd/shfmt
+          - go get -u mvdan.cc/sh/cmd/gosh
+      - name: Lint
+        run: |
+          - make checkgofmt && make fmt_go
+          - make linter
+      - name: unit-test
+        run: make test
+
+  coverage:
+    runs-on: [ ubuntu-16.04, ubuntu-18.04]
+    steps:
+      - name: Set up Golang
+        uses: actions/setup-go@v2
+        with:
+          go-version: 1.13
+        id: go
+      - name: checkout
+        uses: actions/checkout@v2
+      - name: go get
+        run: go get -t -v ./...
+      - name: coverage
+        run: make coverage
+      - name: report
+        if: success()
+        run: bash <(curl -s https://codecov.io/bash)
