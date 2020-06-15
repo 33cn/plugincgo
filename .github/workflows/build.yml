@@ -19,10 +19,7 @@ jobs:
         with:
           path: $GITHUB_WORKSPACE
           key: ${{ runner.os }}-build-${{ hashFiles('**/go.sum') }}
-        restore-keys: |
-          ${{ runner.OS }}-build-${{ env.cache-name }}-
-          ${{ runner.OS }}-build-
-          ${{ runner.OS }}-
+
       - name: Intsall Golangci-lint
         run: |
           - go get -u golang.org/x/tools/cmd/goimports
@@ -44,10 +41,6 @@ jobs:
         with:
           path: $GITHUB_WORKSPACE
           key: ${{ runner.os }}-build-${{ hashFiles('**/go.sum') }}
-        restore-keys: |
-          ${{ runner.OS }}-build-${{ env.cache-name }}-
-          ${{ runner.OS }}-build-
-          ${{ runner.OS }}-
       - name: go get
         run: go get -t -v ./...
       - name: coverage
