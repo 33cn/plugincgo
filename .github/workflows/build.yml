@@ -3,9 +3,7 @@ on: [push,pull_request]
 
 jobs:
   check_fmt:
-    runs-on:
-      - ubuntu-16.04
-      - ubuntu-18.04
+    runs-on: ubuntu-latest
     steps:
       - name: Set up Golang
         uses: actions/setup-go@v2
@@ -34,7 +32,7 @@ jobs:
         run: make test
 
   coverage:
-    runs-on: [ ubuntu-16.04, ubuntu-18.04]
+    runs-on: ubuntu-latest
     steps:
       - name: Cache Go modules
         uses: actions/cache@v2
