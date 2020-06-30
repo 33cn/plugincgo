@@ -2,8 +2,8 @@ cloud.google.com/go v0.26.0/go.mod h1:aQUYkXzVsufM+DwF1aE+0xfcU+56JwCaLick0ClmMT
 github.com/33cn/chain33 v0.0.0-20200426082803-69abea8a78b2/go.mod h1:RJsUKcMdXtCgpqp1W1ga6jTCieuJm6n7qd3XmnPXwa4=
 github.com/33cn/chain33 v1.64.0 h1:21pqcUHoU8VBXLYy51Wt4bkUX+TyjTuSmh1qjIsXmR8=
 github.com/33cn/chain33 v1.64.0/go.mod h1:RJsUKcMdXtCgpqp1W1ga6jTCieuJm6n7qd3XmnPXwa4=
-github.com/33cn/libbyz-go v0.0.0-20181219055405-a0fdec7ca41d h1:vi9EfrXXScL+FIh94PVWyxBxWWbvfmQ0oxmBKZWvu04=
-github.com/33cn/libbyz-go v0.0.0-20181219055405-a0fdec7ca41d/go.mod h1:xZMJxnSxzEpMMab1b49oz/wprm0DFUnlbDgve5r15Ds=
+github.com/33cn/libbyz-go v0.0.0-20200629120358-93000acb7a54 h1:49SSkpHVNiNpdIRR+6IpuzB1eWJi666ayR9TZ+PgCQg=
+github.com/33cn/libbyz-go v0.0.0-20200629120358-93000acb7a54/go.mod h1:0Tjt29Io4xc5jXAtTyOk3FQ7A06BALOoU0VcQpdl8aw=
 github.com/33cn/plugin v1.64.0 h1:b5nQonuFVRYv898WXxY7Sfz7+gQo2D7bOyEu9xeKrYU=
 github.com/33cn/plugin v1.64.0/go.mod h1:k7FQDTWwhIbILP67sWygs5vTyqod2/l62ODcQfF9ypk=
 github.com/AndreasBriese/bbloom v0.0.0-20180913140656-343706a395b7/go.mod h1:bOvUY6CB00SOBii9/FifXqc0awNKxLFCL/+pkDPuyl8=

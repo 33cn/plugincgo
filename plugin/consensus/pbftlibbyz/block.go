@@ -41,7 +41,7 @@ func NewBlockstore(cfg *types.Consensus, isClient bool) *Client {
 }
 
 // ProcEvent method
-func (client *Client) ProcEvent(msg queue.Message) bool {
+func (client *Client) ProcEvent(msg *queue.Message) bool {
 	return false
 }
 
@@ -92,14 +92,14 @@ func (client *Client) CreateBlock() {
 		byzreplica.ByzInitReplica(config, configPriv)
 		return
 	}
-
+	cfg := client.BaseClient.GetQueueClient().GetConfig()
 	for {
 		if issleep {
 			time.Sleep(10 * time.Second)
 		}
 		plog.Info("=============start get tx===============")
 		lastBlock := client.GetCurrentBlock()
-		txs := client.RequestTx(int(types.GetP(lastBlock.Height+1).MaxTxNumber), nil)
+		txs := client.RequestTx(int(cfg.GetP(lastBlock.Height+1).MaxTxNumber), nil)
 		if len(txs) == 0 {
 			issleep = true
 			continue
@@ -111,10 +111,10 @@ func (client *Client) CreateBlock() {
 		//fmt.Println(len(txs))
 
 		var newblock types.Block
-		newblock.ParentHash = lastBlock.Hash()
+		newblock.ParentHash = lastBlock.Hash(cfg)
 		newblock.Height = lastBlock.Height + 1
 		newblock.Txs = txs
-		newblock.TxHash = merkle.CalcMerkleRoot(newblock.Txs)
+		newblock.TxHash = merkle.CalcMerkleRoot(cfg, newblock.Height, newblock.Txs)
 		newblock.BlockTime = types.Now().Unix()
 		if lastBlock.BlockTime >= newblock.BlockTime {
 			newblock.BlockTime = lastBlock.BlockTime + 1
@@ -143,4 +143,8 @@ func (client *Client) CreateGenesisTx() (ret []*types.Transaction) {
 	tx.Payload = types.Encode(&cty.CoinsAction{Value: g, Ty: cty.CoinsActionGenesis})
 	ret = append(ret, &tx)
 	return
+}
+
+func (client *Client) CmpBestBlock(newBlock *types.Block, cmpBlock *types.Block) bool {
+	return true
 }
