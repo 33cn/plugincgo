@@ -334,12 +334,12 @@ func ConvertToSignature(sig crypto.Signature) (*bls.Sign, error) {
 }
 
 // Name name
-const Name = "bls_cgo"
+const Name = "bls"
 
 // ID id
 const ID = 259
 
 func init() {
-	crypto.Register(Name, New())
+	crypto.Register(Name, New(), true)
 	crypto.RegisterType(Name, ID)
 }
