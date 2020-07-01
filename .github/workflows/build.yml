@@ -19,21 +19,73 @@ jobs:
           # TODO: this will hopefully be fixed by
           # https://github.com/actions/setup-go/issues/14
           export PATH=${PATH}:`go env GOPATH`/bin
+          echo $GOPATH
+          echo $PATH
           go get -u golang.org/x/tools/cmd/goimports
           go get github.com/golangci/golangci-lint/cmd/golangci-lint@v1.18.0
           go get -u mvdan.cc/sh/cmd/shfmt
           go get -u mvdan.cc/sh/cmd/gosh
+
       - name: Lint
         run: |
           make checkgofmt && make fmt_go
-          # linter fail for lbyz lib not found
-          # make linter
+          make linter
+
+  unit-test:
+    name: unit-test
+    runs-on: ubuntu-latest
+    steps:
+      - name: Set up Golang
+        uses: actions/setup-go@v2
+        with:
+          go-version: 1.13
+        id: go
+      - name: set go env
+        run: export PATH=${PATH}:`go env GOPATH`/bin
+      - name: checkout
+        uses: actions/checkout@v2
       - name: unit-test
         run: make test
-      - name: coverage
+
+  coverage:
+    name: coverage
+    runs-on: ubuntu-latest
+    steps:
+      - name: Set up Golang
+        uses: actions/setup-go@v2
+        with:
+          go-version: 1.13
+        id: go
+      - name: set go env
+        run: export PATH=${PATH}:`go env GOPATH`/bin
+      - name: checkout
+        uses: actions/checkout@v2
+      - name: ut coverage
         run: make coverage
       - name: cover report
         if: success()
         run: bash <(curl -s https://codecov.io/bash)
+
+
+  ci_paracross_bls:
+    name: ci_paracross_bls
+    runs-on: ubuntu-latest
+    steps:
+      - name: Set up Golang
+        uses: actions/setup-go@v2
+        with:
+          go-version: 1.13
+        id: go
+      - name: set go env
+        run: export PATH=${PATH}:`go env GOPATH`/bin
+      - name: checkout
+        uses: actions/checkout@v2
+      - name: deploy
+        run: |
+          make docker-compose dapp=paracross extra=1
+          make docker-compose-down dapp=paracross
+
+
+
 
 
