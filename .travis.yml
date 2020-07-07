@@ -5,54 +5,53 @@ dist: xenial
 
 notifications:
   email: false
-jobs:
+matrix:
   include:
-    - stage: check_fmt
+    - name: check_fmt
       sudo: require
-      go: "1.11.x"
+      go: "1.13.x"
+      env:
+        - GO111MODULE=on
       install:
         - go get -u golang.org/x/tools/cmd/goimports
-        - go get -u gopkg.in/alecthomas/gometalinter.v2
-        - gometalinter.v2 -i
+        - go get github.com/golangci/golangci-lint/cmd/golangci-lint@v1.18.0
         - go get -u mvdan.cc/sh/cmd/shfmt
         - go get -u mvdan.cc/sh/cmd/gosh
       script:
-        - make install
         - make checkgofmt && make fmt_go
         - make linter
 
-    - stage: unit-test
-      go: "1.9.x"
+    - name: unit-test
+      go: "1.13.x"
+      env:
+        - GO111MODULE=on
       install: skip
       script:
-        - make install
         - make test
 
-    - stage: auto-test
-      go: "1.9.x"
-      install: skip
-      before_script: make build_ci
-      script:
-        - make install
-        - make autotest dapp=all
-
-    - stage: coverage
+    - name: coverage
       if: branch = master
-      go: "1.9.x"
+      go: "1.13.x"
+      env:
+        - GO111MODULE=on
+      before_install:
+        - go get -t -v ./...
       install: skip
       script:
-        - make install
         - make coverage
       after_success:
         - bash <(curl -s https://codecov.io/bash)
 
-    - stage: deploy
+
+    - name: deploy
       if: env(DAPP) IS present
       sudo: required
       services:
         - docker
+      go: "1.13.x"
       env:
         - DOCKER_COMPOSE_VERSION=1.21.2
+        - GO111MODULE=on
       install:
         - curl -fsSL https://download.docker.com/linux/ubuntu/gpg | sudo apt-key add -
         - sudo add-apt-repository "deb [arch=amd64] https://download.docker.com/linux/ubuntu $(lsb_release -cs) stable"
@@ -64,5 +63,4 @@ jobs:
         - sudo mv docker-compose /usr/local/bin
       before_script: make build_ci
       script:
-        - make install
-        - make docker-compose DAPP=${DAPP} && make docker-compose-down DAPP=${DAPP} && make clean
+        - make docker-compose dapp=${DAPP} && make docker-compose-down dapp=${DAPP} && make clean
