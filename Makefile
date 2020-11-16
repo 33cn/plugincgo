@@ -98,10 +98,10 @@ fmt_go: fmt_shell ## go fmt
 	@find . -name '*.go' -not -path "./vendor/*" | xargs goimports -l -w
 
 
-coverage: ## Generate global code coverage report
+coverage: depends ## Generate global code coverage report
 	@./build/tools/coverage.sh;
 
-coverhtml: ## Generate global code coverage report in HTML
+coverhtml: depends ## Generate global code coverage report in HTML
 	@./build/tools/coverage.sh html;
 
 docker: ## build docker image for chain33 run
