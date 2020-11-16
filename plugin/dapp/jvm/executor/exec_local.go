@@ -22,9 +22,9 @@ func (jvm *JVMExecutor) ExecLocal_UpdateJvmContract(payload *jvmTypes.UpdateJvmC
 	return jvm.execLocal(tx, receipt, index)
 }
 
-func (Jvm *JVMExecutor) execLocal(tx *types.Transaction, receipt *types.ReceiptData, index int) (*types.LocalDBSet, error) {
+func (jvm *JVMExecutor) execLocal(tx *types.Transaction, receipt *types.ReceiptData, index int) (*types.LocalDBSet, error) {
 	set := &types.LocalDBSet{}
 	kvs := jvmState.GetAllLocalKeyValues(common.ToHex(tx.Hash()))
-	set.KV = Jvm.AddRollbackKV(tx, tx.Execer, kvs)
+	set.KV = jvm.AddRollbackKV(tx, tx.Execer, kvs)
 	return set, nil
 }

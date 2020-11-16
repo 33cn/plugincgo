@@ -256,7 +256,6 @@ func jvmQueryContract(cmd *cobra.Command, args []string) {
 	for _, info := range jvmQueryResponse.Result {
 		fmt.Println(info)
 	}
-	return
 }
 
 func jvmAddQueryContractFlags(cmd *cobra.Command) {

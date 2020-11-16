@@ -18,6 +18,7 @@ function filterLinter() {
             --enable=goimports \
             --enable=misspell \
             --enable=golint \
+            --skip-files=["./plugin/dapp/jvm/executor/adapter.go"] \
             --exclude=underscores
     )
     if [[ ${#res} -gt "0" ]]; then

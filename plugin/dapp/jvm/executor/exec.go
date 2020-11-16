@@ -85,7 +85,7 @@ func (jvm *JVMExecutor) Exec_CallJvmContract(callJvmContract *jvmTypes.CallJvmCo
 		"ActionData", callJvmContract.ActionData)
 	//2nd step: just call contract
 	//在此处将gojvm指针传递到c实现的jvm中，进行回调的时候用来区分是获取数据时，使用执行db还是查询db
-	errinfo := runJava(contractName, actionData, jvm, TX_EXEC_JOB)
+	errinfo := runJava(contractName, actionData, jvm, TxExecJob)
 	//合约执行失败，有2种可能
 	//1.余额不足等原因被合约强制退出本次交易
 	//2.java合约本身的代码问题，抛出异常

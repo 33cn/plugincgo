@@ -20,9 +20,9 @@ func (jvm *JVMExecutor) ExecDelLocal_UpdateJvmContract(payload *jvmTypes.UpdateJ
 	return jvm.execDelLocal(tx, receipt, index)
 }
 
-func (Jvm *JVMExecutor) execDelLocal(tx *types.Transaction, receipt *types.ReceiptData, index int) (*types.LocalDBSet, error) {
+func (jvm *JVMExecutor) execDelLocal(tx *types.Transaction, receipt *types.ReceiptData, index int) (*types.LocalDBSet, error) {
 	set := &types.LocalDBSet{}
-	kvs, err := Jvm.DelRollbackKV(tx, tx.Execer)
+	kvs, err := jvm.DelRollbackKV(tx, tx.Execer)
 	if err != nil {
 		return nil, err
 	}

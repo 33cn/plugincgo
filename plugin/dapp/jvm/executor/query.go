@@ -45,7 +45,7 @@ func (jvm *JVMExecutor) Query_JavaContract(in *jvmTypes.JVMQueryReq) (types.Mess
 	log.Debug("Query_JavaContract", "ContractName", contractName, "Para", in.Para)
 	//2nd step: just call contract
 	//在此处将gojvm指针传递到c实现的jvm中，进行回调的时候用来区分是获取数据时，使用执行db还是查询db
-	_ = runJava(contractName, in.Para, jvm, TX_QUERY_JOB)
+	_ = runJava(contractName, in.Para, jvm, TxQueryJob)
 
 	//阻塞并等待查询结果的返回
 	queryResult := <-jvm.queryChan
