@@ -6,7 +6,7 @@
 # ...
 export GO111MODULE=on
 CLI := build/chain33-cli
-SRC_CLI := github.com/33cn/plugin/cli
+SRC_CLI := github.com/33cn/plugincgo/cli
 APP := build/chain33
 BUILD_FLAGS = -ldflags "-X github.com/33cn/chain33/common/version.GitCommit=`git rev-parse --short=8 HEAD`"
 LDFLAGS := -ldflags "-w -s"
@@ -76,13 +76,13 @@ ineffassign:
 race: ## Run data race detector
 	@go test -parallel=8 -race -short `go list ./... | grep -v "pbft"`
 
-test: ## Run unittests
+test: depends ## Run unittests
 	@go test -parallel=8 -race  `go list ./...| grep -v "pbft"`
 
 testq: ## Run unittests
 	@go test -parallel=8 `go list ./... | grep -v "pbft"`
 
-fmt: fmt_proto fmt_shell ## go fmt
+fmt: depends fmt_proto fmt_shell ## go fmt
 	@go fmt ./...
 	@find . -name '*.go' -not -path "./vendor/*" | xargs goimports -l -w
 
@@ -111,7 +111,7 @@ docker-compose: ## build docker-compose for chain33 run
 	@cd build && if ! [ -d ci ]; then \
 	 make -C ../ ; \
 	 fi; \
-	 mkdir ci && cp chain33* Dockerfile  docker-compose.yml *.sh ci/ && cd ci/ && ./docker-compose-pre.sh run $(proj) $(dapp)  $(extra) && cd ../..
+	 cp chain33* Dockerfile  docker-compose.yml *.sh ci/ && cd ci/ && ./docker-compose-pre.sh run $(proj) $(dapp)  $(extra) && cd ../..
 
 docker-compose-down: ## build docker-compose for chain33 run
 	@cd build && if [ -d ci ]; then \
@@ -164,7 +164,7 @@ cleandata:
 	rm -rf build/chain33.log
 
 .PHONY: checkgofmt
-checkgofmt: ## get all go files and run go fmt on them
+checkgofmt: depends## get all go files and run go fmt on them
 	@files=$$(find . -name '*.go' -not -path "./vendor/*" | xargs gofmt -l -s); if [ -n "$$files" ]; then \
 		  echo "Error: 'make fmt' needs to be run on:"; \
 		  echo "${files}"; \
