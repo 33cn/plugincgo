@@ -22,12 +22,12 @@ import (
 )
 
 const (
-	JLI_SUCCESS  = int(0)
-	JLI_FAIL     = int(-1)
-	TX_EXEC_JOB  = C.int(0)
-	TX_QUERY_JOB = C.int(1)
-	Bool_TRUE    = C.int(1)
-	Bool_FALSE   = C.int(0)
+	JliSuccess = int(0)
+	JliFail    = int(-1)
+	TxExecJob  = C.int(0)
+	TxQueryJob = C.int(1)
+	Bool_true  = C.int(1)
+	Bool_false = C.int(0)
 )
 
 var (
@@ -42,7 +42,7 @@ var (
 
 //调用java合约交易
 func runJava(contract string, para []string, jvmHandleGo *JVMExecutor, jobType C.int) error {
-	if TX_EXEC_JOB == jobType {
+	if TxExecJob == jobType {
 		height := jvmHandleGo.GetHeight()
 		lastHash := jvmHandleGo.GetLastHash()
 		//当共识类型为ticket，且产生新的区块时，需要重新获取random数据
@@ -66,7 +66,7 @@ func runJava(contract string, para []string, jvmHandleGo *JVMExecutor, jobType C
 	//构建jdk的输入参数
 	tx2Exec := append([]string{contract}, para...)
 	argc, argv := buildJavaArgument(tx2Exec)
-	if TX_EXEC_JOB == jobType {
+	if TxExecJob == jobType {
 		//因为query的内在逻辑问题，参数的内存释放由jdk内部进行释放
 		defer freeArgument(argc, argv)
 	}
@@ -74,7 +74,7 @@ func runJava(contract string, para []string, jvmHandleGo *JVMExecutor, jobType C
 	var exception1DPtr *C.char
 	exception := &exception1DPtr
 	result := C.JLI_Exec_Contract(argc, argv, exception, jobType, (*C.char)(unsafe.Pointer(jvmHandleGo)))
-	if int(result) != JLI_SUCCESS {
+	if int(result) != JliSuccess {
 		exInfo := C.GoString(*exception)
 		defer C.free(unsafe.Pointer(*exception))
 		log.Debug("adapter::runJava", "java stopWithError", exInfo)
@@ -95,7 +95,7 @@ func initJvm(chain33Config *chain33Types.Chain33Config) {
 	defer C.free(unsafe.Pointer(const_jarPath))
 
 	result := C.JLI_Create_JVM(const_jdkPath, const_jarPath)
-	if int(result) != JLI_SUCCESS {
+	if int(result) != JliSuccess {
 		panic("Failed to init JLI_Init_JVM")
 	}
 	signal.Ignore(syscall.SIGPIPE)
@@ -131,7 +131,7 @@ func freeArgument(argc C.int, argv **C.char) {
 //export SetQueryResult
 func SetQueryResult(jvmgo *C.char, exceptionOccurred C.int, info **C.char, count, sizePtr C.int) C.int {
 	exceptionOccur := false
-	if Bool_TRUE == exceptionOccurred {
+	if Bool_true == exceptionOccurred {
 		exceptionOccur = true
 	}
 	var query []string
@@ -156,9 +156,9 @@ func BindTxQueryJVMEnvHandle(jvmGoHandle, envHandle *C.char) C.int {
 	envHandleUintptr := uintptr(unsafe.Pointer(envHandle))
 	jvmExecutor := (*JVMExecutor)(unsafe.Pointer(jvmGoHandle))
 	if !recordTxJVMEnv(jvmExecutor, envHandleUintptr) {
-		return Bool_FALSE
+		return Bool_false
 	}
-	return Bool_TRUE
+	return Bool_true
 }
 
 /*
@@ -169,9 +169,9 @@ func ExecFrozen(from *C.char, amount C.long, envHandle *C.char) C.int {
 	fromGoStr := C.GoString(from)
 	envHandleUintptr := uintptr(unsafe.Pointer(envHandle))
 	if !execFrozen(fromGoStr, int64(amount), envHandleUintptr) {
-		return Bool_FALSE
+		return Bool_false
 	}
-	return Bool_TRUE
+	return Bool_true
 }
 
 //export ExecActive
@@ -179,9 +179,9 @@ func ExecActive(from *C.char, amount C.long, envHandle *C.char) C.int {
 	fromGoStr := C.GoString(from)
 	envHandleUintptr := uintptr(unsafe.Pointer(envHandle))
 	if !execActive(fromGoStr, int64(amount), envHandleUintptr) {
-		return Bool_FALSE
+		return Bool_false
 	}
-	return Bool_TRUE
+	return Bool_true
 }
 
 //export ExecTransfer
@@ -190,9 +190,9 @@ func ExecTransfer(from, to *C.char, amount C.long, envHandle *C.char) C.int {
 	toGoStr := C.GoString(to)
 	envHandleUintptr := uintptr(unsafe.Pointer(envHandle))
 	if !execTransfer(fromGoStr, toGoStr, int64(amount), envHandleUintptr) {
-		return Bool_FALSE
+		return Bool_false
 	}
-	return Bool_TRUE
+	return Bool_true
 }
 
 /*
@@ -229,7 +229,7 @@ func StopTransWithErrInfo(errInfo *C.char, envHandle *C.char) C.int {
 	envHandleUintptr := uintptr(unsafe.Pointer(envHandle))
 	stopTransWithErrInfo(errInfoStr, envHandleUintptr)
 
-	return Bool_TRUE
+	return Bool_true
 }
 
 /*
@@ -241,9 +241,9 @@ func SetState(key *C.char, keySize C.int, value *C.char, valueSize C.int, envHan
 	valSlice := C.GoBytes(unsafe.Pointer(value), valueSize)
 	envHandleUintptr := uintptr(unsafe.Pointer(envHandle))
 	if !stateDBSetState(keySlice, valSlice, envHandleUintptr) {
-		return Bool_FALSE
+		return Bool_false
 	}
-	return Bool_TRUE
+	return Bool_true
 }
 
 //需要调用者释放内存
@@ -264,9 +264,9 @@ func SetStateInStr(key *C.char, value *C.char, envHandle *C.char) C.int {
 	valueStr := C.GoString(value)
 	envHandleUintptr := uintptr(unsafe.Pointer(envHandle))
 	if !stateDBSetState([]byte(keyStr), []byte(valueStr), envHandleUintptr) {
-		return Bool_FALSE
+		return Bool_false
 	}
-	return Bool_TRUE
+	return Bool_true
 }
 
 //调用者负责释放返回指针内存
@@ -299,9 +299,9 @@ func SetLocal(key *C.char, keySize C.int, value *C.char, valueSize C.int, envHan
 	valSlice := C.GoBytes(unsafe.Pointer(value), valueSize)
 	envHandleUintptr := uintptr(unsafe.Pointer(envHandle))
 	if !setValue2Local(keySlice, valSlice, envHandleUintptr) {
-		return Bool_FALSE
+		return Bool_false
 	}
-	return Bool_TRUE
+	return Bool_true
 }
 
 //export GetFromLocal
@@ -321,9 +321,9 @@ func SetLocalInStr(key *C.char, value *C.char, envHandle *C.char) C.int {
 	valueStr := C.GoString(value)
 	envHandleUintptr := uintptr(unsafe.Pointer(envHandle))
 	if !setValue2Local([]byte(keyStr), []byte(valueStr), envHandleUintptr) {
-		return Bool_FALSE
+		return Bool_false
 	}
-	return Bool_TRUE
+	return Bool_true
 }
 
 //调用者负责释放返回指针内存

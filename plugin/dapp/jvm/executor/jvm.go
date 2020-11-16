@@ -85,13 +85,13 @@ func NewJVMExecutor() *JVMExecutor {
 	exec.SetChild(exec)
 	exec.SetExecutorType(types.LoadExecutorType(jvmTypes.JvmX))
 	atomic.LoadInt32(&jvmsCacheCreated)
-	if int32(Bool_TRUE) != atomic.LoadInt32(&jvmsCacheCreated) {
+	if int32(Bool_true) != atomic.LoadInt32(&jvmsCacheCreated) {
 		var err error
 		jvmsCached, err = lru.New(1000)
 		if nil != err {
 			panic("Failed to new lru for caching jvms due to:" + err.Error())
 		}
-		atomic.StoreInt32(&jvmsCacheCreated, int32(Bool_TRUE))
+		atomic.StoreInt32(&jvmsCacheCreated, int32(Bool_true))
 	}
 	return exec
 }

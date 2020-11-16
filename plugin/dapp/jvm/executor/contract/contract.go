@@ -5,8 +5,8 @@ import (
 	"github.com/33cn/chain33/common/address"
 )
 
-// ContractRef 合约对象引用
-type ContractRef interface {
+// Ref 合约对象引用
+type Ref interface {
 	Address() address.Address
 }
 
@@ -25,11 +25,11 @@ type Contract struct {
 	CallerAddress address.Address
 
 	// 调用此合约的地址，有可能是外部地址（直接调用时），也有可能是合约地址（委托调用时）
-	caller ContractRef
+	caller Ref
 
 	// 一般情况下为合约自身地址
 	// 但是，二般情况下（外部账户通过CallCode直接调用合约代码时，此地址会设置为外部账户的地址，就是和caller一样）
-	self ContractRef
+	self Ref
 
 	// 合约代码和代码哈希
 	Code     []byte
@@ -48,7 +48,7 @@ type Contract struct {
 
 // NewContract 创建一个新的合约调用对象
 // 不管合约是否存在，每次调用时都会新创建一个合约对象交给解释器执行，对象持有合约代码和合约地址
-func NewContract(caller ContractRef, object ContractRef, value uint64) *Contract {
+func NewContract(caller Ref, object Ref, value uint64) *Contract {
 	c := &Contract{CallerAddress: caller.Address(), caller: caller, self: object}
 	c.value = value
 
