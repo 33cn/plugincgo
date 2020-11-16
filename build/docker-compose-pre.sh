@@ -47,7 +47,7 @@ function run_dapp() {
         mv docker-compose-metrics.yml docker-compose-paracross.yml
         app="paracross"
     else
-        rm -rf "${app}"-ci && mkdir -p "${app}"-ci && cp ./"${app}"/* ./"${app}"-ci && echo $?
+        rm -rf "${app}"-ci && mkdir -p "${app}"-ci && cp -r ./"${app}"/* ./"${app}"-ci && echo $?
         cp -n ./* ./"${app}"-ci/ && echo $?
         if [ "$app" == "paracross" ]; then
             cp -r dapptest/ "${app}"-ci/ && echo $?
@@ -92,10 +92,6 @@ function main() {
     if [ "${OP}" == "run" ]; then
         #copy chain33 system-test-rpc.sh
         cp "$(go list -f "{{.Dir}}" github.com/33cn/chain33)"/build/system-test-rpc.sh ./
-        mkdir -p ./paracross
-        cp "$(go list -f "{{.Dir}}" github.com/33cn/plugin)"/plugin/dapp/paracross/cmd/build/* ./paracross/
-        cp "$(go list -f "{{.Dir}}" github.com/33cn/plugin)"/chain33.para.toml ./paracross/
-        chmod 777 ./paracross/*
         if [ "${DAPP}" == "all" ] || [ "${DAPP}" == "ALL" ]; then
             echo "============ run main start ================="
             if ! ./${DOCKER_COMPOSE_SH} "$PROJ"; then

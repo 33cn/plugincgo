@@ -1,26 +1,9 @@
-# Binaries for programs and plugins
-*.exe
-*.exe~
-*.dll
-*.so
-*.dylib
-
-# Test binary, build with `go test -c`
-*.test
-
-# Output of the go coverage tool, specifically when used with LiteIDE
-*.out
-tool
-/build/chain33
-/build/chain33-cli
-build/logs
-build/datadir
-build/wallet
+.idea
+plugin/dapp/jvm/cmd/bigfile/
+plugin/dapp/jvm/openjdk/libjli.a
+build/chain33
+build/chain33-cli
+build/chain33.toml
+build/ci/
 build/fork-config
-/chain33
-/chain33-cli
-/cli/cli
-/logs
-/datadir
-/wallet
-*.log
+
