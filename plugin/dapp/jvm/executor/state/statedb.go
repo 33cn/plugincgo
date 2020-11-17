@@ -36,10 +36,6 @@ type MemoryStateDB struct {
 	// 缓存账户对象
 	accounts map[string]*ContractAccount
 
-	// 存储makeLogN指令对应的日志数据
-	logs    map[common.Hash][]*jvmTypes.ContractLog
-	logSize uint
-
 	// 版本号，用于标识数据变更版本
 	snapshots  []*Snapshot
 	currentVer *Snapshot
@@ -67,8 +63,6 @@ func NewMemoryStateDB(executorName string, StateDB db.KV, LocalDB db.KVDB, Coins
 		LocalDB:      LocalDB,
 		CoinsAccount: CoinsAccount,
 		accounts:     make(map[string]*ContractAccount),
-		logs:         make(map[common.Hash][]*jvmTypes.ContractLog),
-		logSize:      0,
 		versionID:    0,
 		stateDirty:   make(map[string]interface{}),
 		dataDirty:    make(map[string]interface{}),
@@ -209,13 +203,13 @@ func (m *MemoryStateDB) GetValueFromLocal(addr, key, txhash string) []byte {
 func (m *MemoryStateDB) SetValue2Local(addr, key string, value []byte, txHash string) bool {
 	acc := m.GetAccount(addr)
 	if acc == nil {
-		return jvmTypes.AccountOpFail
+		return false
 	}
 
 	if nil != acc.SetValue2Local(key, value, txHash) {
-		return jvmTypes.AccountOpFail
+		return false
 	}
-	return jvmTypes.AccountOpSuccess
+	return true
 }
 
 // GetState SLOAD 指令加载合约状态数据
@@ -232,13 +226,13 @@ func (m *MemoryStateDB) GetState(addr string, key string) []byte {
 // SetState SSTORE 指令修改合约状态数据
 func (m *MemoryStateDB) SetState(addr, key string, value []byte) bool {
 	acc := m.GetAccount(addr)
-	if acc != nil {
-		if nil != acc.SetState(key, value) {
-			return jvmTypes.AccountOpFail
-		}
-		return jvmTypes.AccountOpSuccess
+	if acc == nil {
+		return false
 	}
-	return jvmTypes.AccountOpFail
+	if nil != acc.SetState(key, value) {
+		return false
+	}
+	return true
 }
 
 // Exist 判断合约对象是否存在
@@ -255,10 +249,6 @@ func (m *MemoryStateDB) Empty(addr string) bool {
 		return false
 	}
 
-	// 账户有余额，也不为空
-	if m.GetBalance(addr) != 0 {
-		return false
-	}
 	return true
 }
 
@@ -295,7 +285,7 @@ func (m *MemoryStateDB) GetReceiptLogs(addr string) (logs []*types.ReceiptLog) {
 // 因为目前执行器每次执行都是一个新的MemoryStateDB，所以，所有的快照都是从0开始的，
 // 这里获取的应该是从0到目前快照的所有变更；
 // 另外，因为合约内部会调用其它合约，也会产生数据变更，所以这里返回的数据，不止是一个合约的数据。
-func (m *MemoryStateDB) GetChangedData(version int, opType jvmTypes.JvmContratOpType) (kvSet []*types.KeyValue, logs []*types.ReceiptLog) {
+func (m *MemoryStateDB) GetChangedData(version int) (kvSet []*types.KeyValue, logs []*types.ReceiptLog) {
 	if version < 0 {
 		return
 	}
@@ -313,15 +303,6 @@ func (m *MemoryStateDB) GetChangedData(version int, opType jvmTypes.JvmContratOp
 	return
 }
 
-// PrintLogs 本合约执行完毕之后打印合约生成的日志（如果有）
-// 这里不保证当前区块可以打包成功，只是在执行区块中的交易时，如果交易执行成功，就会打印合约日志
-func (m *MemoryStateDB) PrintLogs() {
-	items := m.logs[m.txHash]
-	for _, item := range items {
-		item.PrintLog()
-	}
-}
-
 // SetCurrentExecutorName 设置当前执行器的名称
 func (m *MemoryStateDB) SetCurrentExecutorName(executorName string) {
 	m.ExecutorName = executorName
@@ -331,14 +312,14 @@ func (m *MemoryStateDB) SetCurrentExecutorName(executorName string) {
 func (m *MemoryStateDB) ExecFrozen(tx *types.Transaction, addr string, amount int64) bool {
 	if nil == tx {
 		log15.Error("ExecFrozen get nil tx")
-		return jvmTypes.AccountOpFail
+		return false
 	}
 
 	execaddr := address.ExecAddress(string(tx.Execer))
 	ret, err := m.CoinsAccount.ExecFrozen(addr, execaddr, amount)
 	if err != nil {
 		log15.Error("ExecFrozen error", "addr", addr, "execaddr", execaddr, "amount", amount, "err info", err)
-		return jvmTypes.AccountOpFail
+		return false
 	}
 
 	m.addChange(balanceChange{
@@ -348,7 +329,7 @@ func (m *MemoryStateDB) ExecFrozen(tx *types.Transaction, addr string, amount in
 		logs:       ret.Logs,
 	})
 
-	return jvmTypes.AccountOpSuccess
+	return true
 }
 
 // ExecActive active exec
