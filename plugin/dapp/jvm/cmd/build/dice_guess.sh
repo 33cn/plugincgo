@@ -121,7 +121,7 @@ function queryGame() {
             echo -e "${RED}error query via get${contract}RecordByRound, expect ${expectQueryRes[i]}, get ${result}${NOC}"
             exit 1
         fi
-        (( i++ )) || true
+        ((i++)) || true
 
         echo "query getBonusByRound"
         $cli jvm query -e user.jvm.$contract -r "getBonusByRound 1PrTWtT1Bzhg2L8jjVKU7ohxHVXLU4NMEU 1"

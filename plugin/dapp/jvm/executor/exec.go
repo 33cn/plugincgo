@@ -123,7 +123,7 @@ func (jvm *JVMExecutor) Exec_UpdateJvmContract(updateJvmContract *jvmTypes.Updat
 	if !jvm.mStateDB.Exist(contractAddrInStr) {
 		return nil, jvmTypes.ErrContractNotExist
 	}
-	//只有创建合约的人可以更新合约
+	//只有创建合约的人可以更新合约,因为已经判断合约是否存在，所以就可以肯定地址对应的账户非空
 	manager := jvm.mStateDB.GetAccount(contractAddrInStr).GetCreator()
 	if tx.From() != manager {
 		log.Error("update jvmContract", "tx from:", tx.From(), "manager:", manager)

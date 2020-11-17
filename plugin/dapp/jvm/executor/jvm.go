@@ -149,14 +149,11 @@ func (jvm *JVMExecutor) prepareQueryContext(executorName []byte) {
 func (jvm *JVMExecutor) GenerateExecReceipt(execName, caller, contractAddr string, opType jvmTypes.JvmContratOpType) (*types.Receipt, error) {
 	curVer := jvm.mStateDB.GetLastSnapshot()
 
-	// 打印合约中生成的日志
-	jvm.mStateDB.PrintLogs()
-
 	if curVer == nil {
 		return nil, nil
 	}
 	// 从状态机中获取数据变更和变更日志
-	data, logs := jvm.mStateDB.GetChangedData(curVer.GetID(), opType)
+	data, logs := jvm.mStateDB.GetChangedData(curVer.GetID())
 	contractReceipt := &jvmTypes.ReceiptJVMContract{Caller: caller, ContractName: execName, ContractAddr: contractAddr}
 
 	runLog := &types.ReceiptLog{

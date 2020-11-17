@@ -159,6 +159,63 @@ func Test_ExecTransferFrozen(t *testing.T) {
 	assert.Equal(t, playerAccount.Balance, int64(100*1e8))
 }
 
+func Test_ExecActive(t *testing.T) {
+	env := setupTestEnv()
+	exectorName := "user.jvm.Dice"
+	memoryStateDB := NewMemoryStateDB(exectorName, env.stateDB, env.localDB, env.base.GetCoinsAccount(), 10)
+	addr := address.ExecAddress(exectorName)
+	memoryStateDB.CreateAccount(addr, opener, exectorName)
+
+	deposit2contract(t, memoryStateDB.CoinsAccount, exectorName, opener)
+	openerBalance := memoryStateDB.GetBalance(opener)
+	assert.Equal(t, int64(openerBalance), int64(800*1e8))
+
+	openerBalanceInContract := memoryStateDB.GetBalance(addr)
+	assert.Equal(t, int64(openerBalanceInContract), int64(200*1e8))
+
+	tx := &types.Transaction{
+		Execer: []byte(exectorName),
+	}
+	//在合约内部的opener冻结 200
+	memoryStateDB.ExecFrozen(tx, opener, int64(200*1e8))
+	openerAccount := memoryStateDB.CoinsAccount.LoadExecAccount(opener, addr)
+	assert.Equal(t, openerAccount.Frozen, int64(200*1e8))
+
+	memoryStateDB.ExecActive(tx, opener, int64(100*1e8))
+	openerAccount = memoryStateDB.CoinsAccount.LoadExecAccount(opener, addr)
+	assert.Equal(t, openerAccount.Frozen, int64(100*1e8))
+}
+
+func Test_ExecTransfer(t *testing.T) {
+	env := setupTestEnv()
+	exectorName := "user.jvm.Dice"
+	memoryStateDB := NewMemoryStateDB(exectorName, env.stateDB, env.localDB, env.base.GetCoinsAccount(), 10)
+	addr := address.ExecAddress(exectorName)
+	memoryStateDB.CreateAccount(addr, opener, exectorName)
+
+	deposit2contract(t, memoryStateDB.CoinsAccount, exectorName, opener)
+	openerBalance := memoryStateDB.GetBalance(opener)
+	assert.Equal(t, int64(openerBalance), int64(800*1e8))
+
+	openerBalanceInContract := memoryStateDB.GetBalance(addr)
+	assert.Equal(t, int64(openerBalanceInContract), int64(200*1e8))
+
+	tx := &types.Transaction{
+		Execer: []byte(exectorName),
+	}
+	//在合约内部的opener冻结 200
+	memoryStateDB.Snapshot()
+	memoryStateDB.ExecTransfer(tx, opener, player, int64(100*1e8))
+	openerAccount := memoryStateDB.CoinsAccount.LoadExecAccount(opener, addr)
+	playerAccount := memoryStateDB.CoinsAccount.LoadExecAccount(player, addr)
+	assert.Equal(t, openerAccount.Balance, int64(100*1e8))
+	assert.Equal(t, playerAccount.Balance, int64(100*1e8))
+
+	snap := memoryStateDB.GetLastSnapshot()
+	_, logs := memoryStateDB.GetChangedData(snap.GetID())
+	assert.Equal(t, 2, len(logs))
+}
+
 func Test_AccountOpErrorBranch(t *testing.T) {
 	env := setupTestEnv()
 	exectorName := "user.jvm.Dice"
@@ -189,5 +246,118 @@ func Test_AccountOpErrorBranch(t *testing.T) {
 	assert.Equal(t, false, result)
 	result = memoryStateDB.ExecTransferFrozen(tx, player, player, int64(100*1e8))
 	assert.Equal(t, false, result)
+}
 
+func Test_GetValueFromLocal(t *testing.T) {
+	env := setupTestEnv()
+	exectorName := "user.jvm.Dice"
+	memoryStateDB := NewMemoryStateDB(exectorName, env.stateDB, env.localDB, env.base.GetCoinsAccount(), 10)
+	addr := address.ExecAddress(exectorName)
+	memoryStateDB.CreateAccount(addr, opener, exectorName)
+
+	key := "localKey"
+	value := []byte{1, 2}
+	txHash := "0x12345"
+	memoryStateDB.SetValue2Local(addr, key, value, txHash)
+	valueGet := memoryStateDB.GetValueFromLocal(addr, key, txHash)
+	assert.Equal(t, value, valueGet)
+
+	valueGet = memoryStateDB.GetValueFromLocal("addr", key, txHash)
+	assert.Equal(t, []byte(nil), valueGet)
+
+	valueGet = memoryStateDB.GetValueFromLocal(addr, key, "")
+	assert.Equal(t, []byte(nil), valueGet)
+
+	acc := memoryStateDB.GetAccount(addr)
+	_ = memoryStateDB.LocalDB.Set([]byte(acc.GetLocalDataKey(addr, key)), value)
+	valueGet = memoryStateDB.GetValueFromLocal(addr, key, "")
+	assert.Equal(t, value, valueGet)
+
+	result := memoryStateDB.SetValue2Local("addr", key, value, txHash)
+	assert.Equal(t, false, result)
+
+	result = memoryStateDB.SetValue2Local(addr, key, value, "")
+	assert.Equal(t, false, result)
+}
+
+func Test_GetState_And_SetState(t *testing.T) {
+	env := setupTestEnv()
+	exectorName := "user.jvm.Dice"
+	memoryStateDB := NewMemoryStateDB(exectorName, env.stateDB, env.localDB, env.base.GetCoinsAccount(), 10)
+	addr := address.ExecAddress(exectorName)
+	memoryStateDB.CreateAccount(addr, opener, exectorName)
+
+	key := "localKey"
+	value := []byte{1, 2}
+	result := memoryStateDB.SetState("addr", key, value)
+	assert.Equal(t, false, result)
+
+	result = memoryStateDB.SetState(addr, key, value)
+	assert.Equal(t, true, result)
+
+	valueGet := memoryStateDB.GetState(addr, key)
+	assert.Equal(t, value, valueGet)
+
+	valueGet = memoryStateDB.GetState("addr", key)
+	assert.Equal(t, []byte(nil), valueGet)
+}
+
+func Test_Empty(t *testing.T) {
+	env := setupTestEnv()
+	exectorName := "user.jvm.Dice"
+	memoryStateDB := NewMemoryStateDB(exectorName, env.stateDB, env.localDB, env.base.GetCoinsAccount(), 10)
+	addr := address.ExecAddress(exectorName)
+	memoryStateDB.CreateAccount(addr, opener, exectorName)
+
+	result := memoryStateDB.Empty(addr)
+	assert.Equal(t, true, result)
+
+	memoryStateDB.SetCodeAndAbi(addr, []byte{1, 2}, nil)
+	result = memoryStateDB.Empty(addr)
+	assert.Equal(t, false, result)
+
+}
+
+func Test_Snapshot(t *testing.T) {
+	env := setupTestEnv()
+	exectorName := "user.jvm.Dice"
+	memoryStateDB := NewMemoryStateDB(exectorName, env.stateDB, env.localDB, env.base.GetCoinsAccount(), 10)
+	addr := address.ExecAddress(exectorName)
+	memoryStateDB.CreateAccount(addr, opener, exectorName)
+
+	version := memoryStateDB.Snapshot()
+	assert.Equal(t, 0, version)
+
+	lastSnapshot := memoryStateDB.GetLastSnapshot()
+	assert.Equal(t, 0, lastSnapshot.id)
+}
+
+func Test_GetReceiptLogs(t *testing.T) {
+	env := setupTestEnv()
+	exectorName := "user.jvm.Dice"
+	memoryStateDB := NewMemoryStateDB(exectorName, env.stateDB, env.localDB, env.base.GetCoinsAccount(), 10)
+	addr := address.ExecAddress(exectorName)
+	memoryStateDB.CreateAccount(addr, opener, exectorName)
+
+	memoryStateDB.SetCodeAndAbi(addr, []byte{1, 2}, nil)
+	log := memoryStateDB.GetReceiptLogs(addr)
+	assert.Equal(t, 1, len(log))
+}
+
+func Test_GetChangedData(t *testing.T) {
+	env := setupTestEnv()
+	exectorName := "user.jvm.Dice"
+	memoryStateDB := NewMemoryStateDB(exectorName, env.stateDB, env.localDB, env.base.GetCoinsAccount(), 10)
+	addr := address.ExecAddress(exectorName)
+	memoryStateDB.CreateAccount(addr, opener, exectorName)
+	memoryStateDB.Snapshot()
+	snap := memoryStateDB.GetLastSnapshot()
+
+	memoryStateDB.SetCodeAndAbi(addr, []byte{1, 2}, nil)
+	data, logs := memoryStateDB.GetChangedData(snap.GetID())
+	assert.Equal(t, 0, len(logs))
+	assert.Equal(t, 1, len(data))
+
+	memoryStateDB.SetCurrentExecutorName("user.jvm.Guess")
+	assert.Equal(t, "user.jvm.Guess", memoryStateDB.ExecutorName)
 }

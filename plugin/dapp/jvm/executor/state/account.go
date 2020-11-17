@@ -139,19 +139,11 @@ func (c *ContractAccount) SetCodeAndAbi(code []byte, abi []byte) {
 
 // SetCreator 设置创建者
 func (c *ContractAccount) SetCreator(creator string) {
-	if len(creator) == 0 {
-		log15.Error("SetCreator error", "creator", creator)
-		return
-	}
 	c.Data.Creator = creator
 }
 
 // SetExecName 设置执行名称
 func (c *ContractAccount) SetExecName(execName string) {
-	if len(execName) == 0 {
-		log15.Error("SetExecName error", "execName", execName)
-		return
-	}
 	c.Data.Name = execName
 }
 
@@ -184,7 +176,6 @@ func (c *ContractAccount) BuildDataLog() (log *chain33Types.ReceiptLog) {
 		Name:     c.Data.Name,
 		Addr:     c.Data.Addr,
 		CodeHash: common.ToHex(c.Data.Code),
-		AbiHash:  common.ToHex(c.Data.Abi),
 	}
 
 	logdatas, err := proto.Marshal(&logjvmContractData)

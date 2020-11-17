@@ -13,7 +13,6 @@ import (
 // 如果合约执行出错，会按生成顺序的倒序，依次调用变更对象的回滚接口进行数据回滚，并同步删除变更对象缓存
 // 如果合约执行成功，会按生成顺序的郑旭，依次调用变更对象的数据和日志变更记录，回传给区块链
 type DataChange interface {
-	revert(mdb *MemoryStateDB)
 	getData(mdb *MemoryStateDB) []*types.KeyValue
 	getLog(mdb *MemoryStateDB) []*types.ReceiptLog
 }
@@ -28,17 +27,6 @@ type Snapshot struct {
 // GetID get id for snapshot
 func (ver *Snapshot) GetID() int {
 	return ver.id
-}
-
-// 回滚当前版本
-func (ver *Snapshot) revert() bool {
-	if ver.entries == nil {
-		return true
-	}
-	for _, entry := range ver.entries {
-		entry.revert(ver.statedb)
-	}
-	return true
 }
 
 // 添加变更数据
@@ -129,21 +117,12 @@ type (
 	}
 )
 
-// 在baseChang中定义三个基本操作，子对象中只需要实现必要的操作
-func (ch baseChange) revert(s *MemoryStateDB) {
-}
-
 func (ch baseChange) getData(s *MemoryStateDB) (kvset []*types.KeyValue) {
 	return nil
 }
 
 func (ch baseChange) getLog(s *MemoryStateDB) (logs []*types.ReceiptLog) {
 	return nil
-}
-
-// 创建账户对象的回滚，需要删除缓存中的账户和变更标记
-func (ch createAccountChange) revert(s *MemoryStateDB) {
-	delete(s.accounts, ch.account)
 }
 
 // 创建账户对象的数据集
@@ -156,14 +135,6 @@ func (ch createAccountChange) getData(s *MemoryStateDB) (kvset []*types.KeyValue
 	return nil
 }
 
-func (ch codeChange) revert(mdb *MemoryStateDB) {
-	acc := mdb.accounts[ch.account]
-	if acc != nil {
-		acc.Data.Code = ch.prevcode
-		acc.Data.CodeHash = ch.prevhash
-	}
-}
-
 func (ch codeChange) getData(mdb *MemoryStateDB) (kvset []*types.KeyValue) {
 	acc := mdb.accounts[ch.account]
 	if acc != nil {
@@ -171,13 +142,6 @@ func (ch codeChange) getData(mdb *MemoryStateDB) (kvset []*types.KeyValue) {
 		return kvset
 	}
 	return nil
-}
-
-func (ch storageChange) revert(mdb *MemoryStateDB) {
-	acc := mdb.accounts[ch.account]
-	if acc != nil {
-		acc.SetState(string(ch.key), ch.prevalue)
-	}
 }
 
 func (ch storageChange) getData(mdb *MemoryStateDB) []*types.KeyValue {
@@ -195,29 +159,11 @@ func (ch storageChange) getLog(mdb *MemoryStateDB) []*types.ReceiptLog {
 	return nil
 }
 
-func (ch storageChange) getDataFromLocalDB(mdb *MemoryStateDB) []*types.KeyValue {
-	acc := mdb.accounts[ch.account]
-	if acc != nil {
-		currentVal := acc.GetState(string(ch.key))
-		var kvSet []*types.KeyValue
-		kvSet = append(kvSet, &types.KeyValue{Key: ch.key, Value: currentVal})
-		return kvSet
-	}
-	return nil
-}
-
 func (ch balanceChange) getData(mdb *MemoryStateDB) []*types.KeyValue {
 	return ch.data
 }
 func (ch balanceChange) getLog(mdb *MemoryStateDB) []*types.ReceiptLog {
 	return ch.logs
-}
-
-func (ch localStorageChange) revert(mdb *MemoryStateDB) {
-	acc := mdb.accounts[ch.account]
-	if acc != nil {
-		mdb.LocalDB.Set(ch.key, ch.prevalue)
-	}
 }
 
 func (ch localStorageChange) getData(mdb *MemoryStateDB) []*types.KeyValue {
