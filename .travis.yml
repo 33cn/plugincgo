@@ -35,6 +35,7 @@ matrix:
       env:
         - GO111MODULE=on
       before_install:
+        - make depends
         - go get -t -v ./...
       install: skip
       script:
