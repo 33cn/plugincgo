@@ -81,7 +81,7 @@ func (m *MemoryStateDB) CreateAccount(addr, creator string, name string) {
 		acc.SetCreator(creator)
 		acc.SetExecName(name)
 		m.accounts[addr] = acc
-		m.addChange(createAccountChange{baseChange: baseChange{}, account: addr})
+		m.addChange(createAccountChange{account: addr})
 	}
 }
 
@@ -323,7 +323,6 @@ func (m *MemoryStateDB) ExecFrozen(tx *types.Transaction, addr string, amount in
 	}
 
 	m.addChange(balanceChange{
-		baseChange: baseChange{},
 		amount:     amount,
 		data:       ret.KV,
 		logs:       ret.Logs,
@@ -346,7 +345,6 @@ func (m *MemoryStateDB) ExecActive(tx *types.Transaction, addr string, amount in
 	}
 
 	m.addChange(balanceChange{
-		baseChange: baseChange{},
 		amount:     amount,
 		data:       ret.KV,
 		logs:       ret.Logs,
@@ -371,7 +369,6 @@ func (m *MemoryStateDB) ExecTransfer(tx *types.Transaction, from, to string, amo
 	}
 
 	m.addChange(balanceChange{
-		baseChange: baseChange{},
 		amount:     amount,
 		data:       ret.KV,
 		logs:       ret.Logs,
@@ -394,7 +391,6 @@ func (m *MemoryStateDB) ExecTransferFrozen(tx *types.Transaction, from, to strin
 	}
 
 	m.addChange(balanceChange{
-		baseChange: baseChange{},
 		amount:     amount,
 		data:       ret.KV,
 		logs:       ret.Logs,
