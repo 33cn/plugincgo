@@ -323,9 +323,9 @@ func (m *MemoryStateDB) ExecFrozen(tx *types.Transaction, addr string, amount in
 	}
 
 	m.addChange(balanceChange{
-		amount:     amount,
-		data:       ret.KV,
-		logs:       ret.Logs,
+		amount: amount,
+		data:   ret.KV,
+		logs:   ret.Logs,
 	})
 
 	return true
@@ -345,9 +345,9 @@ func (m *MemoryStateDB) ExecActive(tx *types.Transaction, addr string, amount in
 	}
 
 	m.addChange(balanceChange{
-		amount:     amount,
-		data:       ret.KV,
-		logs:       ret.Logs,
+		amount: amount,
+		data:   ret.KV,
+		logs:   ret.Logs,
 	})
 
 	return jvmTypes.AccountOpSuccess
@@ -369,9 +369,9 @@ func (m *MemoryStateDB) ExecTransfer(tx *types.Transaction, from, to string, amo
 	}
 
 	m.addChange(balanceChange{
-		amount:     amount,
-		data:       ret.KV,
-		logs:       ret.Logs,
+		amount: amount,
+		data:   ret.KV,
+		logs:   ret.Logs,
 	})
 
 	return jvmTypes.AccountOpSuccess
@@ -391,9 +391,9 @@ func (m *MemoryStateDB) ExecTransferFrozen(tx *types.Transaction, from, to strin
 	}
 
 	m.addChange(balanceChange{
-		amount:     amount,
-		data:       ret.KV,
-		logs:       ret.Logs,
+		amount: amount,
+		data:   ret.KV,
+		logs:   ret.Logs,
 	})
 
 	return jvmTypes.AccountOpSuccess
