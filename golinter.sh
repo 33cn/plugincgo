@@ -18,7 +18,6 @@ function filterLinter() {
             --enable=goimports \
             --enable=misspell \
             --enable=golint \
-            --skip-dirs=["./plugin/dapp/jvm"] \
             --skip-files=["./plugin/dapp/jvm/executor/adapter.go"] \
             --exclude=underscores
     )
