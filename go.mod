@@ -9,7 +9,7 @@ require (
 	github.com/OneOfOne/xxhash v1.2.5 // indirect
 	github.com/golang/protobuf v1.5.2
 	github.com/hashicorp/golang-lru v0.5.5-0.20210104140557-80c98217689d
-	github.com/herumi/bls-eth-go-binary v0.0.0-20200522010937-01d282b5380b
+	github.com/herumi/bls-eth-go-binary v0.0.0-20210917013441-d37c07cfda4e
 	github.com/ianlancetaylor/cgosymbolizer v0.0.0-20201020185029-6689ec8725c4
 	github.com/phoreproject/bls v0.0.0-20200525203911-a88a5ae26844
 	github.com/spf13/cobra v1.1.1
