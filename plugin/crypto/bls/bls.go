@@ -31,7 +31,7 @@ func New() *Driver {
 }
 
 // GenKey create private key
-func (d Driver) GenKey() (k crypto.PrivKey, e error) {
+func (d *Driver) GenKey() (k crypto.PrivKey, e error) {
 	defer func() {
 		if r := recover(); r != nil {
 			k = nil
@@ -48,8 +48,15 @@ func (d Driver) GenKey() (k crypto.PrivKey, e error) {
 	return PrivKeyBLS(*privKeyBytes), nil
 }
 
+// SignatureFromBytes create signature from bytes
+func (d *Driver) SignatureFromBytes(b []byte) (sig crypto.Signature, err error) {
+	sigBytes := new([BLSSignatureLength]byte)
+	copy(sigBytes[:], b[:])
+	return SignatureBLS(*sigBytes), nil
+}
+
 // PrivKeyFromBytes create private key from bytes
-func (d Driver) PrivKeyFromBytes(b []byte) (privKey crypto.PrivKey, err error) {
+func (d *Driver) PrivKeyFromBytes(b []byte) (privKey crypto.PrivKey, err error) {
 	if len(b) != BLSPrivateKeyLength {
 		return nil, errors.New("invalid bls priv key byte")
 	}
@@ -66,7 +73,7 @@ func (d Driver) PrivKeyFromBytes(b []byte) (privKey crypto.PrivKey, err error) {
 }
 
 // PubKeyFromBytes create public key from bytes
-func (d Driver) PubKeyFromBytes(b []byte) (pubKey crypto.PubKey, err error) {
+func (d *Driver) PubKeyFromBytes(b []byte) (pubKey crypto.PubKey, err error) {
 	if len(b) != BLSPublicKeyLength {
 		return nil, errors.New("invalid bls pub key byte")
 	}
@@ -75,14 +82,12 @@ func (d Driver) PubKeyFromBytes(b []byte) (pubKey crypto.PubKey, err error) {
 	return PubKeyBLS(*pubKeyBytes), nil
 }
 
-// SignatureFromBytes create signature from bytes
-func (d Driver) SignatureFromBytes(b []byte) (sig crypto.Signature, err error) {
-	sigBytes := new([BLSSignatureLength]byte)
-	copy(sigBytes[:], b[:])
-	return SignatureBLS(*sigBytes), nil
+// Validate validate sign by msg and pub
+func (d *Driver) Validate(msg, pub, sig []byte) error {
+	return crypto.BasicValidation(d, msg, pub, sig)
 }
 
-func (d Driver) Aggregate(sigs []crypto.Signature) (crypto.Signature, error) {
+func (d *Driver) Aggregate(sigs []crypto.Signature) (crypto.Signature, error) {
 	if len(sigs) == 0 {
 		return nil, errors.New("no signatures to aggregate")
 	}
@@ -101,7 +106,7 @@ func (d Driver) Aggregate(sigs []crypto.Signature) (crypto.Signature, error) {
 	return SignatureBLS(*ret), nil
 }
 
-func (d Driver) AggregatePublic(pubs []crypto.PubKey) (crypto.PubKey, error) {
+func (d *Driver) AggregatePublic(pubs []crypto.PubKey) (crypto.PubKey, error) {
 	if len(pubs) == 0 {
 		return nil, errors.New("no public keys to aggregate")
 	}
@@ -119,7 +124,7 @@ func (d Driver) AggregatePublic(pubs []crypto.PubKey) (crypto.PubKey, error) {
 	return PubKeyBLS(*ret), nil
 }
 
-func (d Driver) VerifyAggregatedOne(pubs []crypto.PubKey, m []byte, sig crypto.Signature) error {
+func (d *Driver) VerifyAggregatedOne(pubs []crypto.PubKey, m []byte, sig crypto.Signature) error {
 	bPubs := make([]bls.PublicKey, 0, len(pubs))
 	for i, pub := range pubs {
 		bPub, err := ConvertToPublicKey(pub)
@@ -141,7 +146,7 @@ func (d Driver) VerifyAggregatedOne(pubs []crypto.PubKey, m []byte, sig crypto.S
 }
 
 //由于cgo库的规则，需要每个ms都不大于32byte,或者后面
-func (d Driver) VerifyAggregatedN(pubs []crypto.PubKey, ms [][]byte, sig crypto.Signature) error {
+func (d *Driver) VerifyAggregatedN(pubs []crypto.PubKey, ms [][]byte, sig crypto.Signature) error {
 	bPubs := make([]bls.PublicKey, 0, len(pubs))
 	for i, pub := range pubs {
 		bPub, err := ConvertToPublicKey(pub)
@@ -184,7 +189,7 @@ func (privKey PrivKeyBLS) Bytes() []byte {
 }
 
 // Sign create signature
-func (privKey PrivKeyBLS) Sign(msg []byte) crypto.Signature {
+func (privKey PrivKeyBLS) Sign(msg []byte, opts ...interface{}) crypto.Signature {
 	k := bls.SecretKey{}
 	k.Deserialize(privKey[:])
 
@@ -195,7 +200,7 @@ func (privKey PrivKeyBLS) Sign(msg []byte) crypto.Signature {
 }
 
 // PubKey convert to public key
-func (privKey PrivKeyBLS) PubKey() crypto.PubKey {
+func (privKey PrivKeyBLS) PubKey(opts ...interface{}) crypto.PubKey {
 	k := bls.SecretKey{}
 	err := k.Deserialize(privKey[:])
 	if err != nil {
@@ -333,13 +338,6 @@ func ConvertToSignature(sig crypto.Signature) (*bls.Sign, error) {
 	return &s, nil
 }
 
-// Name name
-const Name = "bls"
-
-// ID id
-const ID = 259
-
 func init() {
-	crypto.Register(Name, New(), true)
-	crypto.RegisterType(Name, ID)
+	crypto.Register("bls", New(), crypto.WithRegOptionTypeID(259), crypto.WithRegOptionCGO())
 }

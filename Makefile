@@ -45,12 +45,22 @@ autotest_ci: autotest ## autotest ci
 autotest_tick: autotest ## run with ticket mining
 	@cd build/autotest && bash ./run.sh gitlabci build && cd ../../
 
-update: ## version 可以是git tag打的具体版本号,也可以是commit hash, 什么都不填的情况下默认从master分支拉取最新版本
+#make updateplugin version=xxx
+#单独更新plugin或chain33, version可以是tag或者commit哈希(tag必须是--vMajor.Minor.Patch--规范格式)
+updateplugin:
 	@if [ -n "$(version)" ]; then   \
-	go get github.com/33cn/chain33@${version}  ; \
+    go get github.com/33cn/plugin@${version}; \
+    else \
+    go get github.com/33cn/plugin@master;fi
+updatechain33:
+	@if [ -n "$(version)" ]; then   \
+	go get github.com/33cn/chain33@${version}; \
 	else \
-	go get github.com/33cn/chain33@master ;fi
-	@go mod tidy
+	go get github.com/33cn/chain33@master;fi
+
+#make update version=xxx, 同时更新chain33和plugin, 两个项目必须有相同的tag(tag必须是--vMajor.Minor.Patch--规范格式)
+update:updatechain33 updateplugin
+
 dep:
 	@go get github.com/golangci/golangci-lint/cmd/golangci-lint@v1.32.0
 	@go get -u golang.org/x/tools/cmd/goimports
@@ -219,7 +229,7 @@ auto_ci: clean fmt_proto fmt_shell protobuf
 
 
 addupstream:
-	git remote add upstream https://github.com/33cn/plugin.git
+	git remote add upstream https://github.com/33cn/plugincgo.git
 	git remote -v
 
 sync:
@@ -244,7 +254,7 @@ push:
 pull:
 	@remotelist=$$(git remote | grep ${name});if [ -z $$remotelist ]; then \
 		echo ${remotelist}; \
-		git remote add ${name} https://github.com/${name}/plugin.git ; \
+		git remote add ${name} https://github.com/${name}/plugincgo.git ; \
 	fi;
 	git fetch ${name}
 	git checkout ${name}/${b}
