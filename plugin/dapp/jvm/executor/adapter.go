@@ -18,7 +18,6 @@ import (
 	chain33Types "github.com/33cn/chain33/types"
 	"github.com/33cn/plugincgo/plugin/dapp/jvm/executor/state"
 	jvmTypes "github.com/33cn/plugincgo/plugin/dapp/jvm/types"
-	_ "github.com/ianlancetaylor/cgosymbolizer"
 )
 
 const (
