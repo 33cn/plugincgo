@@ -108,16 +108,11 @@ func SignSM2Internal(msg []byte, keyIndex int) (signatureR, signatureS []byte, e
 	if SDF_Success != rt {
 		return nil, nil, errors.New(fmt.Sprintf("SDF_ExportSignPublicKey_ECC failed:%08x", int(rt)))
 	}
-	//fmt.Println("SDF_ExportSignPublicKey_ECC success for chain33 verification\n")
-	//fmt.Printf("chain33 PubKey.bits: %d\n", int(signPubKey.bits))
-	//fmt.Printf("chain33 PubKey.x: %s\n", common.ToHex(C.GoBytes(unsafe.Pointer(&signPubKey.x[0]), C.int(64))))
-	//fmt.Printf("chain33 PubKey.y: %s\n", common.ToHex(C.GoBytes(unsafe.Pointer(&signPubKey.y[0]), C.int(64))))
 
 	rt = C.SDF_HashInit(C.g_hSess, C.SGD_SM3, &signPubKey, &C.SM2ID[0], SM2IDSize)
 	if SDF_Success != rt {
 		return nil, nil, errors.New(fmt.Sprintf("SDF_HashInit failed %#08x", int(rt)))
 	}
-	//fmt.Println("SDF_HashInit success\n")
 
 	msg2C := (*C.uchar)(C.CBytes(msg))
 	defer C.free(unsafe.Pointer(msg2C))
@@ -125,22 +120,18 @@ func SignSM2Internal(msg []byte, keyIndex int) (signatureR, signatureS []byte, e
 	if SDF_Success != rt {
 		return nil, nil, errors.New(fmt.Sprintf("SDF_HashUpdate failed %#08x", int(rt)))
 	}
-	//fmt.Println("SDF_HashUpdate success\n")
 
 	hashlen := C.uint(32)
 	rt = C.SDF_HashFinal(C.g_hSess, &C.sm3Hash[0], &hashlen)
 	if SDF_Success != rt {
 		return nil, nil, errors.New(fmt.Sprintf("SDF_HashFinal failed %#08x", int(rt)))
 	}
-	//fmt.Printf("SDF_HashFinal success! sm3Hash = %s\n", common.ToHex(C.GoBytes(unsafe.Pointer(&C.sm3Hash[0]), C.int(32))))
-	//0x726106a793a45af8ee1b9b6781b87391e4b49304a5f12f6dff82c7edb5f58390
 
 	var sign C.ECCSignature
 	rt = C.SDF_InternalSign_ECC(C.g_hSess, C.uint(keyIndex), &C.sm3Hash[0], hashlen, &sign)
 	if SDF_Success != rt {
 		return nil, nil, errors.New(fmt.Sprintf("SDF_InternalSign_ECC failed %#08x", int(rt)))
 	}
-	//fmt.Println("SDF_InternalSign_ECC success! ")
 
 	r := C.GoBytes(unsafe.Pointer(&sign.r[0]), C.int(64))
 	s := C.GoBytes(unsafe.Pointer(&sign.s[0]), C.int(64))
