@@ -52,7 +52,6 @@ const (
 
 //OpenHSMSession:打开TASS HSM PCIe设备并建立session
 func OpenHSMSession() error {
-	C.pass_voidHandle(C.g_hDev)
 	if rt := C.setupHSM(); int(rt) != 0 {
 		return errors.New(fmt.Sprintf("Failde to setup HSM with error code:%#08x", int(rt)))
 	}
@@ -86,7 +85,7 @@ func ReleaeAccessRight(keyIndex int) error {
 	return nil
 }
 
-//获取签名
+//通过硬件进行secp256k1签名
 func SignSecp256k1(msg []byte, keyIndex int) (signatureR, signatureS []byte, err error) {
 	hash := goSDKSh256.Sum256(msg)
 	hash2sign := (*C.uchar)(C.CBytes(hash[:]))
@@ -136,6 +135,15 @@ func SignSM2Internal(msg []byte, keyIndex int) (signatureR, signatureS []byte, e
 	r := C.GoBytes(unsafe.Pointer(&sign.r[0]), C.int(64))
 	s := C.GoBytes(unsafe.Pointer(&sign.s[0]), C.int(64))
 	return r, s, nil
+}
+
+func MakeRSVsignature(rb, sb []byte) []byte {
+	vb := byte(0)
+	var signature []byte
+	signature = append(signature, rb...)
+	signature = append(signature, sb...)
+	signature = append(signature, vb)
+	return signature
 }
 
 func MakeDERsignature(rb, sb []byte) []byte {
