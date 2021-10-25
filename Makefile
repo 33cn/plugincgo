@@ -18,9 +18,9 @@ proj := "build"
 default: depends build
 
 build: depends
-	go build $(BUILD_FLAGS) -v -i -o $(APP)
-	go build $(BUILD_FLAGS) -v -i -o $(CLI) $(SRC_CLI)
-	go build $(BUILD_FLAGS) -v -i -o build/fork-config github.com/33cn/plugin/cli/fork_config/
+	CGO_ENABLED=1 go build $(BUILD_FLAGS) -v  -o $(APP)
+	CGO_ENABLED=1 go build $(BUILD_FLAGS) -v  -o $(CLI) $(SRC_CLI)
+	go build $(BUILD_FLAGS) -v  -o build/fork-config github.com/33cn/plugin/cli/fork_config/
 	@cp chain33.toml build/
 
 
@@ -229,7 +229,7 @@ auto_ci: clean fmt_proto fmt_shell protobuf
 
 
 addupstream:
-	git remote add upstream https://github.com/33cn/plugincgo.git
+	git remote add upstream git@github.com:33cn/plugincgo.git
 	git remote -v
 
 sync:
