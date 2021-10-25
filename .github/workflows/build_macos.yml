@@ -2,8 +2,8 @@ name: build_macos
 on: [push,pull_request]
 
 jobs:
-  ci_build:
-    name: ci_build
+  ci_macos_build:
+    name: ci_macos_build
     runs-on: macos-latest
     steps:
       - name: Set up Golang
