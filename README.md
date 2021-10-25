@@ -4,6 +4,7 @@ https://camo.githubusercontent.com/915b7be44ada53c290eb157634330494ebe3e30a/6874
 [![pipeline status](https://api.travis-ci.org/33cn/plugincgo.svg?branch=master)](https://travis-ci.org/33cn/plugincgo/)
 [![Go Report Card](https://goreportcard.com/badge/github.com/33cn/plugincgo?branch=master)](https://goreportcard.com/report/github.com/33cn/plugincgo)
 [![Windows Build Status](https://ci.appveyor.com/api/projects/status/github/33cn/plugincgo?svg=true&branch=master&passingText=Windows%20-%20OK&failingText=Windows%20-%20failed&pendingText=Windows%20-%20pending)](https://ci.appveyor.com/project/33cn/plugincgo)
+[![Macos Build Status](https://github.com/33cn/plugincgo/actions/workflows/build_macos.yml/badge.svg)](https://github.com/33cn/plugincgo/actions/workflows/build_macos.yml)
 [![codecov](https://codecov.io/gh/33cn/plugin/branch/master/graph/badge.svg)](https://codecov.io/gh/33cn/plugincgo)
 # chain33 官方插件系统(cgo 插件)
 

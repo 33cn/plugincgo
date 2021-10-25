@@ -1,0 +1,26 @@
+name: build_macos
+on: [push,pull_request]
+
+jobs:
+  ci_macos_build:
+    name: ci_macos_build
+    runs-on: macos-latest
+    steps:
+      - name: Set up Golang
+        uses: actions/setup-go@v2
+        with:
+          go-version: 1.15
+        id: go
+      - name: set go env
+        run: export PATH=${PATH}:`go env GOPATH`/bin
+      - name: checkout
+        uses: actions/checkout@v2
+      - name: deploy
+        run: |
+          make docker-compose dapp=paracross extra=1
+          make docker-compose-down dapp=paracross
+
+
+
+
+
