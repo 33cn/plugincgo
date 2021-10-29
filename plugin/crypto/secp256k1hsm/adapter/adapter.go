@@ -43,11 +43,17 @@ import (
 	"errors"
 	"fmt"
 	"unsafe"
+
+	ethCrypto "github.com/ethereum/go-ethereum/crypto"
+	"github.com/33cn/chain33/system/crypto/secp256k1"
+	"github.com/33cn/chain33/common/address"
 )
 
 const (
 	SDF_Success = C.int(0)
 	SM2IDSize   = C.uint(16)
+	AddrVerifyTypeChain33 = int(0)
+	AddrVerifyTypeEthereum = int(1)
 )
 
 //OpenHSMSession:打开TASS HSM PCIe设备并建立session
@@ -99,6 +105,34 @@ func SignSecp256k1(msg []byte, keyIndex int) (signatureR, signatureS []byte, err
 	r := C.GoBytes(unsafe.Pointer(&C.RS[0]), C.int(32))
 	s := C.GoBytes(unsafe.Pointer(&C.RS[32]), C.int(32))
 	return r, s, nil
+}
+
+func SignSecp256k1Workaround(hash []byte, keyIndex int, verifyAdd string, addrType int) (signatureR, signatureS []byte, err error) {
+	for try := 0; try < 11; try++ {
+		r, s, err := SignSecp256k1WithHash(hash, keyIndex)
+		if nil != err {
+			return nil, nil, err
+		}
+		sig := MakeRSVsignature(r, s)
+		pubRecoverd, err := ethCrypto.Ecrecover(hash[:], sig)
+		secpPubKey, err := ethCrypto.UnmarshalPubkey(pubRecoverd)
+		if nil != err {
+			panic("ethCrypto.UnmarshalPubkey failed")
+		}
+		if AddrVerifyTypeChain33 == addrType {
+			pub33Bytes := ethCrypto.CompressPubkey(secpPubKey)
+			addr := address.PubKeyToAddress(pub33Bytes)
+			if verifyAdd == addr.String() {
+				return r, s, nil
+			}
+		} else {
+			recoveredAddr := ethCrypto.PubkeyToAddress(*secpPubKey)
+			if recoveredAddr.String() == verifyAdd {
+				return r, s, nil
+			}
+		}
+	}
+	return nil, nil, errors.New("SignSecp256k1Workaround try too many times")
 }
 
 //通过硬件进行secp256k1签名
