@@ -49,7 +49,11 @@ func main() {
 			panic("Failed to GetPrivateKeyAccessRight")
 		}
 
-		verifySecp256k1(keyIndex)
+		for i := 0; i < 20; i++ {
+			time.Sleep(time.Millisecond*1000)
+			verifySecp256k1(keyIndex)
+		}
+
 
 		if err := adapter.ReleaeAccessRight(keyIndex); nil != err {
 			panic("Failed to GetPrivateKeyAccessRight")
