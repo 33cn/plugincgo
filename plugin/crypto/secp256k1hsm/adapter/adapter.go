@@ -45,7 +45,6 @@ import (
 	"unsafe"
 
 	ethCrypto "github.com/ethereum/go-ethereum/crypto"
-	"github.com/33cn/chain33/system/crypto/secp256k1"
 	"github.com/33cn/chain33/common/address"
 )
 
