@@ -101,6 +101,21 @@ func SignSecp256k1(msg []byte, keyIndex int) (signatureR, signatureS []byte, err
 	return r, s, nil
 }
 
+//通过硬件进行secp256k1签名
+func SignSecp256k1WithHash(hash []byte, keyIndex int) (signatureR, signatureS []byte, err error) {
+	hash2sign := (*C.uchar)(C.CBytes(hash[:]))
+	defer C.free(unsafe.Pointer(hash2sign))
+
+	rt := C.TassECCPrivateKeySign_Eth(C.g_hSess, C.TA_ALG_ECC_SECP_256K1, C.uint(keyIndex), C.uint(256), C.skCipherByKek, C.uint(0), hash2sign, C.uint(32), C.RSPtr, C.signatureLenPtr)
+	if SDF_Success != rt {
+		return nil, nil, errors.New(fmt.Sprintf("TassECCPrivateKeySign failed %#08x", int(rt)))
+	}
+
+	r := C.GoBytes(unsafe.Pointer(&C.RS[0]), C.int(32))
+	s := C.GoBytes(unsafe.Pointer(&C.RS[32]), C.int(32))
+	return r, s, nil
+}
+
 func SignSM2Internal(msg []byte, keyIndex int) (signatureR, signatureS []byte, err error) {
 	var signPubKey C.ECCrefPublicKey
 	rt := C.SDF_ExportSignPublicKey_ECC(C.g_hSess, C.uint(keyIndex), &signPubKey)
