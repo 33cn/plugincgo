@@ -7,7 +7,6 @@ import (
 
 	"github.com/33cn/chain33/common"
 	"github.com/33cn/chain33/common/crypto"
-	"github.com/33cn/chain33/system/crypto/secp256k1"
 	"github.com/33cn/chain33/system/crypto/sm2"
 	"github.com/33cn/plugincgo/plugin/crypto/secp256k1hsm/adapter"
 	ethCrypto "github.com/ethereum/go-ethereum/crypto"
@@ -43,19 +42,19 @@ func main() {
 	fmt.Println("   ")
 	fmt.Println("   ")
 
-	keyIndex := 1
 	passwd := "a1234567"
-	//passwd := []byte("a1234567")
+	//for keyIndex := 2; keyIndex <= 2; keyIndex++ {
+	    keyIndex := 2
+		if err := adapter.GetPrivateKeyAccessRight(passwd, keyIndex); nil != err {
+			panic("Failed to GetPrivateKeyAccessRight")
+		}
 
-	if err := adapter.GetPrivateKeyAccessRight(passwd, keyIndex); nil != err {
-		panic("Failed to GetPrivateKeyAccessRight")
-	}
+		verifySecp256k1(keyIndex)
 
-	verifySecp256k1(keyIndex)
-
-	if err := adapter.ReleaeAccessRight(keyIndex); nil != err {
-		panic("Failed to GetPrivateKeyAccessRight")
-	}
+		if err := adapter.ReleaeAccessRight(keyIndex); nil != err {
+			panic("Failed to GetPrivateKeyAccessRight")
+		}
+	//}
 	adapter.CloseHSMSession()
 }
 
@@ -65,38 +64,25 @@ func verifySecp256k1(keyIndex int) {
 	if err != nil {
 		panic("Failed to SignSecp256k1 due to:" + err.Error())
 	}
+	fmt.Println("   ")
+	fmt.Println("   ")
+	fmt.Println("   ")
+	fmt.Println(" keyIndex is ", keyIndex)
 	fmt.Println("signature R=", common.ToHex(r))
 	fmt.Println("signature S=", common.ToHex(s))
-
-	///////构建公钥////////
-	pub, _ := common.FromHex("04C24FBA65F8CD81223D2935EDEA663048A1BEFB5A78BC67C80DCB5A1D601F898C35EA242D2E76CACE9EE5A61DBDA29A5076707325FE20B5A80DB0CA6D02C5D983")
-
-	///////构建以太坊签名并验证////////
-	ethSig := append(r, s...)
 	hash := crypto.Sha256(msg)
-	VerifyResult4Eth := ethCrypto.VerifySignature(pub, hash[:], ethSig[:64])
-	if !VerifyResult4Eth {
-		panic("Failed to do Signature verification for Ethereum")
-	}
-	fmt.Println(" ^-^ Succeed to do signature verification for Ethereum ^-^  ")
-	fmt.Println("   ")
-	fmt.Println("   ")
-	fmt.Println("   ")
 
-	///////构建chain33签名并验证////////
-	derSig := adapter.MakeDERsignature(r, s)
-	fmt.Println(" derSig ", common.ToHex(derSig))
+	sig := adapter.MakeRSVsignature(r, s)
+	fmt.Println(" sig ", common.ToHex(sig))
 
-	secpPubKey, err := ethCrypto.UnmarshalPubkey(pub)
-	pub33Bytes := ethCrypto.CompressPubkey(secpPubKey)
-	c := &secp256k1.Driver{}
-	chain33PubKey, _ := c.PubKeyFromBytes(pub33Bytes)
-	chain33Sig, err := c.SignatureFromBytes(derSig)
-	VerifyResult4Chain33 := chain33PubKey.VerifyBytes(msg, chain33Sig)
-	if !VerifyResult4Chain33 {
-		panic("Failed to do Signature verification for Chain33")
+	pubRecoverd, err := ethCrypto.Ecrecover(hash[:], sig)
+	fmt.Println(" pubRecoverd is ", common.ToHex(pubRecoverd))
+	secpPubKey, err := ethCrypto.UnmarshalPubkey(pubRecoverd)
+	if nil != err {
+		panic("ethCrypto.UnmarshalPubkey failed")
 	}
-	fmt.Println(" ^-^ Succeed to do signature verification for Chain33 ^-^  ")
+	recoveredAddr := ethCrypto.PubkeyToAddress(*secpPubKey)
+	fmt.Println(" recoveredAddr is ", recoveredAddr.String())
 }
 
 func verifySM2() {
