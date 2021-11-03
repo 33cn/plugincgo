@@ -2,6 +2,7 @@ package secp256k1
 
 import (
 	"fmt"
+	"github.com/btcsuite/btcd/btcec"
 	"testing"
 
 	goSh256 "crypto/sha256"
@@ -13,6 +14,8 @@ import (
 	"github.com/33cn/plugin/plugin/dapp/evm/executor/vm/common"
 	ethCrypto "github.com/ethereum/go-ethereum/crypto"
 	"github.com/stretchr/testify/require"
+
+	btcSecp256k1 "github.com/btcsuite/btcd/btcec"
 )
 
 //secp256k1签名DER编码格式
@@ -97,4 +100,23 @@ func Test_secp256k1(t *testing.T) {
 	//0x3045022100f4009ab47dc32880b3e0bfad47885e9cfd1fd2228e804b38fb7f0f5ea6c02405022061422eb681fdd5078aa3971770cf22ce4ef12e9116995e4a3e141e23f5403014
 	ok := pub.VerifyBytes(msg, signature)
 	require.Equal(true, ok)
+}
+
+func Test_btcsecp256k1(t *testing.T) {
+	msg := []byte("456789")
+	priv, _ := btcSecp256k1.PrivKeyFromBytes(btcSecp256k1.S256(), common.FromHex("CC38546E9E659D15E6B4893F0AB32A06D103931A8230B0BDE71459D2B27D6944"))
+
+	for i := 0; i < 10; i++ {
+		sig, err := btcec.SignCompact(btcec.S256(), priv, crypto.Sha256(msg), true)
+		assert.Equal(t, nil, err)
+
+		pub, compressed, err := btcec.RecoverCompact(btcec.S256(), sig, crypto.Sha256(msg))
+		assert.Equal(t, nil, err)
+		fmt.Println("i is", i)
+		fmt.Println("The recoverd pubkey is", common.Bytes2Hex(pub.SerializeCompressed()))
+		fmt.Println("The compressed is", compressed)
+		fmt.Println("   ")
+		fmt.Println("   ")
+		assert.Equal(t, "0x02504fa1c28caaf1d5a20fefb87c50a49724ff401043420cb3ba271997eb5a4387", common.Bytes2Hex(pub.SerializeCompressed()))
+	}
 }
