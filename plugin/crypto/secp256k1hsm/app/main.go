@@ -39,8 +39,6 @@ func main() {
 	}
 	fmt.Println("Succeed to OpenHSMSession")
 	fmt.Println("   ")
-	fmt.Println("   ")
-	fmt.Println("   ")
 
 	passwd := "a1234567"
 	//for keyIndex := 2; keyIndex <= 2; keyIndex++ {
@@ -53,8 +51,6 @@ func main() {
 			time.Sleep(time.Millisecond*1000)
 			verifySecp256k1(keyIndex)
 		}
-
-
 		if err := adapter.ReleaeAccessRight(keyIndex); nil != err {
 			panic("Failed to GetPrivateKeyAccessRight")
 		}
