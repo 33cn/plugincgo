@@ -56,6 +56,14 @@ func Test_VerifySecp256k1SigFromTass_forChain33(t *testing.T) {
 
 	result := pubKey.VerifyBytes(msg, sig)
 	require.Equal(true, result)
+
+	privateKeySlice := common.FromHex("300B155F751964276C0536230BD9B16FE7A86533C3CBAA7575E8D0431DBEDF23")
+	privateKey, err := c.PrivKeyFromBytes(privateKeySlice)
+	require.Equal(nil, err)
+	sig2 := privateKey.Sign(msg)
+	fmt.Println("sig2 = ", common.Bytes2Hex(sig2.Bytes()))
+	sig3 := privateKey.Sign(msg)
+	fmt.Println("sig3 = ", common.Bytes2Hex(sig3.Bytes()))
 }
 
 //在以太坊上的验证签名的有效性
@@ -119,4 +127,100 @@ func Test_btcsecp256k1(t *testing.T) {
 		fmt.Println("   ")
 		assert.Equal(t, "0x02504fa1c28caaf1d5a20fefb87c50a49724ff401043420cb3ba271997eb5a4387", common.Bytes2Hex(pub.SerializeCompressed()))
 	}
+
+	//rawerrInfo := common.FromHex("0x65766d3a20657865637574696f6e2072657665727465642c64657461696c3a2008c379a00000000000000000000000000000000000000000000000000000000000000020000000000000000000000000000000000000000000000000000000000000003f425459206465706f736974732072657175697265207468652027746f6b656e27206164647265737320746f20626520746865206e756c6c206164647265737300")
+	//rawerrInfo := common.FromHex("0x3f425459206465706f736974732072657175697265207468652027746f6b656e27206164647265737320746f20626520746865206e756c6c206164647265737300")
+
+	rawerrInfo := common.FromHex("0x65766d3a20657865637574696f6e2072657665727465642c64657461696c3a2008c379a0")
+	errInfo := filterInvisibleChar(rawerrInfo)
+	fmt.Println(string(errInfo))
+
+	fmt.Println(string(rawerrInfo))
 }
+
+func filterInvisibleChar(in []byte) []byte{
+	var out []byte
+	for i:= 0; i < len(in); i++ {
+		if in[i] < 32 || in[i] > 126 {
+			continue
+		}
+		out = append(out, in[i])
+	}
+
+   return out
+}
+
+//签名值rsv：4E55CB10F11ECDD66807E303FA6A7797F9067D15AA2F4BC33BBA733BBF314B23324465CA8D3F89638756332CE3E556757277E158E90D1E39AA7D1014ABE331220000001C
+//私钥：300B155F751964276C0536230BD9B16FE7A86533C3CBAA7575E8D0431DBEDF23
+//公钥X：4C4D145791FB81AE5F5CC6B8290E12AB73818B1EAAA42A95C26F488DFCBD6887
+//公钥y：976481BDEBB48B2796A72FCB2A48624AC33FE0B294529054B015BD1B537C6CDF
+//签名数据（摘要）：1234567890123456123456789012345612345678901234561234567890123456
+
+func Test_Ethsecp256k1(t *testing.T) {
+
+	hash := common.FromHex("1234567890123456123456789012345612345678901234561234567890123456")
+	sig := common.FromHex("4E55CB10F11ECDD66807E303FA6A7797F9067D15AA2F4BC33BBA733BBF314B23324465CA8D3F89638756332CE3E556757277E158E90D1E39AA7D1014ABE3312201")
+
+	pubRecoverd, err := ethCrypto.Ecrecover(hash[:], sig)
+	fmt.Println(" pubRecoverd is ", common.Bytes2Hex(pubRecoverd))
+	secpPubKey, err := ethCrypto.UnmarshalPubkey(pubRecoverd)
+	if nil != err {
+		panic("ethCrypto.UnmarshalPubkey failed")
+	}
+	recoveredAddr := ethCrypto.PubkeyToAddress(*secpPubKey)
+	fmt.Println(" recoveredAddr is ", recoveredAddr.String())
+
+	privateKeySlice := common.FromHex("300B155F751964276C0536230BD9B16FE7A86533C3CBAA7575E8D0431DBEDF23")
+
+	privateKey, err := ethCrypto.ToECDSA(privateKeySlice)
+	assert.Equal(t, nil, err)
+
+	calcAddr := ethCrypto.PubkeyToAddress(privateKey.PublicKey)
+	fmt.Println(" calcAddr is ", calcAddr.String())
+
+	pub2 := ethCrypto.FromECDSAPub(&privateKey.PublicKey)
+	fmt.Println(" pub2 is ", common.Bytes2Hex(pub2))
+}
+
+func Test_chain33secp256k1(t *testing.T) {
+	hash := common.FromHex("1234567890123456123456789012345612345678901234561234567890123456")
+	sig := common.FromHex("4E55CB10F11ECDD66807E303FA6A7797F9067D15AA2F4BC33BBA733BBF314B23324465CA8D3F89638756332CE3E556757277E158E90D1E39AA7D1014ABE33122")
+	pubKey := common.FromHex("044C4D145791FB81AE5F5CC6B8290E12AB73818B1EAAA42A95C26F488DFCBD6887976481BDEBB48B2796A72FCB2A48624AC33FE0B294529054B015BD1B537C6CDF")
+
+	sigSecp256k1 := makeDERsignature(sig[:32], sig[32:])
+
+	pub, err := btcSecp256k1.ParsePubKey(pubKey[:], btcSecp256k1.S256())
+	assert.Equal(t, nil, err)
+
+	sig2, err := btcSecp256k1.ParseDERSignature(sigSecp256k1[:], btcSecp256k1.S256())
+	assert.Equal(t, nil, err)
+	res := sig2.Verify(hash, pub)
+	assert.Equal(t, true, res)
+
+}
+
+func makeDERsignature(rb, sb []byte) []byte {
+	if rb[0] > 0x7F {
+		rb = append([]byte{0}, rb...)
+	}
+
+	if sb[0] > 0x7F {
+		sb = append([]byte{0}, sb...)
+	}
+	// total length of returned signature is 1 byte for each magic and
+	// length (6 total), plus lengths of r and s
+	length := 6 + len(rb) + len(sb)
+	b := make([]byte, length)
+
+	b[0] = 0x30
+	b[1] = byte(length - 2)
+	b[2] = 0x02
+	b[3] = byte(len(rb))
+	offset := copy(b[4:], rb) + 4
+	b[offset] = 0x02
+	b[offset+1] = byte(len(sb))
+	copy(b[offset+2:], sb)
+	return b
+}
+
+
