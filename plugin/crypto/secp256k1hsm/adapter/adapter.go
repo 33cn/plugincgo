@@ -15,6 +15,8 @@ package adapter
 //unsigned char*RSPtr = RS;
 //unsigned int signatureLen = 64;
 //unsigned int *signatureLenPtr = &signatureLen;
+//unsigned int sigV = 0;
+//unsigned int *sigVPtr = &sigV;
 //int setupHSM()
 //{
 //    auto rt = SDF_OpenDevice(&g_hDev);
@@ -43,9 +45,6 @@ import (
 	"errors"
 	"fmt"
 	"unsafe"
-
-	ethCrypto "github.com/ethereum/go-ethereum/crypto"
-	"github.com/33cn/chain33/common/address"
 )
 
 const (
@@ -91,47 +90,19 @@ func ReleaeAccessRight(keyIndex int) error {
 }
 
 //通过硬件进行secp256k1签名
-func SignSecp256k1(msg []byte, keyIndex int) (signatureR, signatureS []byte, err error) {
+func SignSecp256k1(msg []byte, keyIndex int) (signatureR, signatureS []byte, signatureV byte, err error) {
 	hash := goSDKSh256.Sum256(msg)
 	hash2sign := (*C.uchar)(C.CBytes(hash[:]))
 	defer C.free(unsafe.Pointer(hash2sign))
 
-	rt := C.TassECCPrivateKeySign_Eth(C.g_hSess, C.TA_ALG_ECC_SECP_256K1, C.uint(keyIndex), C.uint(256), C.skCipherByKek, C.uint(0), hash2sign, C.uint(32), C.RSPtr, C.signatureLenPtr)
-	if SDF_Success != rt {
-		return nil, nil, errors.New(fmt.Sprintf("TassECCPrivateKeySign failed %#08x", int(rt)))
+	rt := C.TassECCPrivateKeySign_RFC(C.g_hSess, C.TA_ALG_ECC_SECP_256K1, C.uint(keyIndex), C.uint(256), C.skCipherByKek, C.uint(0), hash2sign, C.uint(32), C.sigVPtr, C.RSPtr, C.signatureLenPtr)
+    if SDF_Success != rt {
+		return nil, nil, 0, errors.New(fmt.Sprintf("TassECCPrivateKeySign failed %#08x", int(rt)))
 	}
 
 	r := C.GoBytes(unsafe.Pointer(&C.RS[0]), C.int(32))
 	s := C.GoBytes(unsafe.Pointer(&C.RS[32]), C.int(32))
-	return r, s, nil
-}
-
-func SignSecp256k1Workaround(hash []byte, keyIndex int, verifyAdd string, addrType int) (signatureR, signatureS []byte, err error) {
-	for try := 0; try < 11; try++ {
-		r, s, err := SignSecp256k1WithHash(hash, keyIndex)
-		if nil != err {
-			return nil, nil, err
-		}
-		sig := MakeRSVsignature(r, s)
-		pubRecoverd, err := ethCrypto.Ecrecover(hash[:], sig)
-		secpPubKey, err := ethCrypto.UnmarshalPubkey(pubRecoverd)
-		if nil != err {
-			panic("ethCrypto.UnmarshalPubkey failed")
-		}
-		if AddrVerifyTypeChain33 == addrType {
-			pub33Bytes := ethCrypto.CompressPubkey(secpPubKey)
-			addr := address.PubKeyToAddress(pub33Bytes)
-			if verifyAdd == addr.String() {
-				return r, s, nil
-			}
-		} else {
-			recoveredAddr := ethCrypto.PubkeyToAddress(*secpPubKey)
-			if recoveredAddr.String() == verifyAdd {
-				return r, s, nil
-			}
-		}
-	}
-	return nil, nil, errors.New("SignSecp256k1Workaround try too many times")
+	return r, s, byte(C.sigV), nil
 }
 
 //通过硬件进行secp256k1签名
@@ -139,7 +110,7 @@ func SignSecp256k1WithHash(hash []byte, keyIndex int) (signatureR, signatureS []
 	hash2sign := (*C.uchar)(C.CBytes(hash[:]))
 	defer C.free(unsafe.Pointer(hash2sign))
 
-	rt := C.TassECCPrivateKeySign_Eth(C.g_hSess, C.TA_ALG_ECC_SECP_256K1, C.uint(keyIndex), C.uint(256), C.skCipherByKek, C.uint(0), hash2sign, C.uint(32), C.RSPtr, C.signatureLenPtr)
+	rt := C.TassECCPrivateKeySign_RFC(C.g_hSess, C.TA_ALG_ECC_SECP_256K1, C.uint(keyIndex), C.uint(256), C.skCipherByKek, C.uint(0), hash2sign, C.uint(32), C.sigVPtr, C.RSPtr, C.signatureLenPtr)
 	if SDF_Success != rt {
 		return nil, nil, errors.New(fmt.Sprintf("TassECCPrivateKeySign failed %#08x", int(rt)))
 	}
@@ -185,8 +156,8 @@ func SignSM2Internal(msg []byte, keyIndex int) (signatureR, signatureS []byte, e
 	return r, s, nil
 }
 
-func MakeRSVsignature(rb, sb []byte) []byte {
-	vb := byte(0)
+func MakeRSVsignature(rb, sb []byte, vb byte) []byte {
+	//vb := byte(0)
 	var signature []byte
 	signature = append(signature, rb...)
 	signature = append(signature, sb...)

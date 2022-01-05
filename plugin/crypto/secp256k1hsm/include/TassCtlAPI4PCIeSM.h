@@ -1,6 +1,6 @@
 ﻿#pragma once
 
-#include "TassType4PCIeSM.h"
+#include "./TassType4PCIeSM.h"
 
 #ifdef __cplusplus
 extern "C" {
@@ -17,7 +17,7 @@ extern "C" {
 #define TASS_KEY_SIZE_MAX			64			//对称密钥最大长度
 #define TASS_KCV_SIZE				16			//密钥校验值长度
 #define TASS_DEV_ADMIN_CNT_MAX		1			//设备管理员数量
-#define TASS_KEY_ADMIN_CNT_MAX		4			//密钥管理员最大数量
+#define TASS_KEY_ADMIN_CNT_MAX		5			//密钥管理员最大数量
 
 #define TASS_ECC_INDEX_MAX		64
 #define TASS_SYMM_INDEX_MAX		64
@@ -114,8 +114,7 @@ extern "C" {
 	 *
 	 * @note 打开设备后必须首先执行登录接口，才能执行其他操作
 	 */
-	int TassCtlListAdmin(void* hDevice,
-		TassAdminInfo* info, unsigned int* infoLen);
+	int TassCtlListAdmin(void* hDevice, TassAdminInfo* info, unsigned int* infoLen);
 
 	/**
 	 * @brief 申请口令哈希加密公钥
@@ -151,7 +150,8 @@ extern "C" {
 	 *
 	 * @param	hDevice			[in]	已打开的设备句柄
 	 * @param	name			[in]	管理员名称，设备管理员固定为“admin”
-	 * @param	pwdHashCipher	[in]	管理员口令的哈希值密文
+	 * @param	pwdHashCipher	[in]	管理员口令的哈希值密文，未绑定UKey有效
+	 * @param	ukeyPIN			[in]	UKey的登录PIN码，密钥管理员绑定UKey后有效
 	 *
 	 * @return
 	 *   @retval 0		成功
@@ -161,7 +161,8 @@ extern "C" {
 	 */
 	int TassCtlLogin(void* hDevice,
 		const char* name,
-		const unsigned char pwdHashCipher[128]);
+		const unsigned char pwdHashCipher[128],
+		const char* ukeyPIN);
 
 	/**
 	 * @brief 登出
@@ -193,12 +194,13 @@ extern "C" {
 		const unsigned char newPwdHashCipher[128]);
 
 	/**
-	 * @brief 绑定UKey（暂未启用）
+	 * @brief 绑定UKey
 	 *
 	 * @param	hDevice			[in]	已打开的设备句柄
 	 * @param	name			[in]	已登录的用户名称
 	 * @param	pwdHashCipher	[in]	管理员口令的哈希值密文
 	 * @param	ukeyId			[in]	UKey序号
+	 * @param	ukeyPIN			[in]	UKey的登录PIN码
 	 *
 	 * @return
 	 *   @retval 0		成功
@@ -208,11 +210,12 @@ extern "C" {
 	 */
 	int TassCtlBindUKey(void* hDevice,
 		const char* name,
-		const char pwdHashCipher[128],
-		const char* ukeyId);
+		const unsigned char pwdHashCipher[128],
+		const char* ukeyId,
+		const char* ukeyPIN);
 
 	/**
-	 * @brief 添加密钥管理员（暂未启用）
+	 * @brief 添加密钥管理员
 	 *
 	 * @param	hDevice				[in]	已打开的设备句柄
 	 * @param	devPwdHashCipher	[in]	设备管理员口令的哈希值密文
@@ -232,7 +235,7 @@ extern "C" {
 		const unsigned char pwdHashCipher[128]);
 
 	/**
-	 * @brief 删除密钥管理员（暂未启用）
+	 * @brief 删除密钥管理员
 	 *
 	 * @param	hDevice				[in]	已打开的设备句柄
 	 * @param	devPwdHashCipher	[in]	设备管理员口令的哈希值密文
@@ -403,7 +406,6 @@ extern "C" {
 	/**
 	* @brief 生成设备加密密钥对（暂未启用）
 	*
-	*
 	* @param	hDevice		[in]	已打开的设备句柄
 	*
 	* @return
@@ -418,7 +420,6 @@ extern "C" {
 	/**
 	* @brief 生成设备本地保护密钥（暂未启用）
 	*
-	*
 	* @param	hDevice		[in]	已打开的设备句柄
 	* @param	bootAuth	[in]	是否开机认证
 	*
@@ -429,12 +430,10 @@ extern "C" {
 	* @note 须先登录设备管理员
 	*
 	*/
-	int TassCtlGenDevKEK(void* hDevice,
-		TassBool bootAuth);
+	int TassCtlGenDevKEK(void* hDevice, TassBool bootAuth);
 
 	/**
 	* @brief 导入设备加密密钥对（暂未启用）
-	*
 	*
 	* @param	hDevice					[in]	已打开的设备句柄
 	* @param	pwdHashCipher			[in]	设备管理员口令的哈希值密文
@@ -475,7 +474,7 @@ extern "C" {
 		const unsigned char kekCipherByDevEncPk[112]);
 
 	/**
-	 * @brief 开机认证
+	 * @brief 开机认证（暂未启用）
 	 *
 	 * @param	hDevice			[in]	已打开的设备句柄
 	 * @param	pwdHashCipher	[in]	设备管理员口令的哈希值密文
@@ -486,8 +485,7 @@ extern "C" {
 	 *
 	 * @note 须先登录设备管理员
 	 */
-	int TassCtlBootAuth(void* hDevice,
-		const unsigned char pwdHashCipher[128]);
+	int TassCtlBootAuth(void* hDevice, const unsigned char pwdHashCipher[128]);
 
 	/**
 	 * @brief 导出设备加密密钥对（暂未启用）
@@ -570,7 +568,7 @@ extern "C" {
 	 *									密钥类型为 2-SM2、3-ECC_256R1、8-ECC_256K1时，模长只支持256
 	 *									密钥类型为 4-RSA时，模长只支持2048
 	 *									密钥类型为 9-HMAC时，支持模长是128、256、384、512bit,
-	 *									类型为0-SM4、1-SM1、5-AES、6-DES、7-SM7时，仅模长仅支持128
+	 *									类型为0-SM4、1-SM1、5-AES、6-DES、7-SM7时，模长仅支持128
 	 * @param	index		[in]		密钥索引，为0时根据标签存储密钥，为-1时不存储
 	 * @param	label		[in]		密钥标签
 	 * @param	pwd			[in]		私钥口令，当前未启用

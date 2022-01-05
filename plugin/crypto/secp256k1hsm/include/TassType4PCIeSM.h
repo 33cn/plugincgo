@@ -11,8 +11,8 @@ extern "C" {
 	}TassDevState;
 
 	typedef enum {
-		TA_BOOL_FALSE = 0,	//私钥
-		TA_BOOL_TRUE = !TA_BOOL_FALSE,	//公钥
+		TA_BOOL_FALSE = 0,
+		TA_BOOL_TRUE = !TA_BOOL_FALSE,
 	}TassBool;
 
 	typedef enum {

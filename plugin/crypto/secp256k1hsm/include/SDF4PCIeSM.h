@@ -1045,12 +1045,13 @@ extern "C" {
 	/**
 	* @brief	在密码设备内部创建用于存储用户数据的文件
 	* @param	hSessionHandle	[IN]	与设备建立的会话句柄
-	* @param	pucFileName		[IN]	缓冲区指针，用于存放输入的文件名，最大长度128字节。
-	* @param	uiNameLen		[IN]	文件名长度
-	* @param	uiFileSize		[IN]	文件所占存储空间的长度
+	* @param	pucFileName		[IN]	缓冲区指针，用于存放输入的文件名
+	* @param	uiNameLen		[IN]	文件名长度，最大长度128字节。
+	* @param	uiFileSize		[IN]	文件所占存储空间的长度，最大长度为3K，且要大于写入文件数据的长度
 	* @return
 	*   @retval	0		成功
 	*   @retval	非0		失败，返回错误代码
+	* @note	创建文件个数最多4个，且每个文件最大不能超过3K
 	*/
 	int SDF_CreateFile(
 		void* hSessionHandle,
@@ -1059,10 +1060,30 @@ extern "C" {
 		unsigned int uiFileSize);
 
 	/**
+	* @brief	向密码设备内部存储用户数据的文件中写入内容
+	* @param	hSessionHandle	[IN]	与设备建立的会话句柄
+	* @param	pucFileName		[IN]	缓冲区指针，用于存放输入的文件名
+	* @param	uiNameLen		[IN]	文件名长度，最大长度128字节
+	* @param	uiOffset		[IN]	指定写入文件时的偏移值
+	* @param	uiFileLength	[IN]	指定写入文件内容的长度，最大长度为3K，且不能大于创建的文件的长度
+	* @param	pucBuffer		[IN]	缓冲区指针，用于存放输入的写文件数据
+	* @return
+	*   @retval	0		成功
+	*   @retval	非0		失败，返回错误代码
+	*/
+	int SDF_WriteFile(
+		void* hSessionHandle,
+		unsigned char* pucFileName,
+		unsigned int uiNameLen,
+		unsigned int uiOffset,
+		unsigned int uiFileLength,
+		unsigned char* pucBuffer);
+
+	/**
 	* @brief	读取在密码设备内部存储用户数据的文件的内容
 	* @param	hSessionHandle	[IN]		与设备建立的会话句柄
-	* @param	pucFileName		[IN]		缓冲区指针，用于存放输入的文件名，最大长度128字节
-	* @param	uiNameLen		[IN]		文件名长度
+	* @param	pucFileName		[IN]		缓冲区指针，用于存放输入的文件名
+	* @param	uiNameLen		[IN]		文件名长度，最大长度128字节
 	* @param	uiOffset		[IN]		指定读取文件时的偏移值
 	* @param	puiFileLength	[IN/OUT]	入参时指定读取文件内容的长度；出参时返回实际读取文件内容的长度
 	* @param	pucBuffer		[OUT]		缓冲区指针，用于存放读取的文件数据
@@ -1079,30 +1100,10 @@ extern "C" {
 		unsigned char* pucBuffer);
 
 	/**
-	* @brief	向密码设备内部存储用户数据的文件中写入内容
-	* @param	hSessionHandle	[IN]	与设备建立的会话句柄
-	* @param	pucFileName		[IN]	缓冲区指针，用于存放输入的文件名，最大长度128字节
-	* @param	uiNameLen		[IN]	文件名长度
-	* @param	uiOffset		[IN]	指定写入文件时的偏移值
-	* @param	uiFileLength	[IN]	指定写入文件内容的长度
-	* @param	pucBuffer		[IN]	缓冲区指针，用于存放输入的写文件数据
-	* @return
-	*   @retval	0		成功
-	*   @retval	非0		失败，返回错误代码
-	*/
-	int SDF_WriteFile(
-		void* hSessionHandle,
-		unsigned char* pucFileName,
-		unsigned int uiNameLen,
-		unsigned int uiOffset,
-		unsigned int uiFileLength,
-		unsigned char* pucBuffer);
-
-	/**
 	* @brief	在密码设备内部创建用于存储用户数据的文件
 	* @param	hSessionHandle	[IN]	与设备建立的会话句柄
-	* @param	pucFileName		[IN]	缓冲区指针，用于存放输入的文件名，最大长度128字节
-	* @param	uiNameLen		[IN]	文件名长度
+	* @param	pucFileName		[IN]	缓冲区指针，用于存放输入的文件名
+	* @param	uiNameLen		[IN]	文件名长度，最大长度128字节
 	* @return
 	*   @retval	0		成功
 	*   @retval	非0		失败，返回错误代码
