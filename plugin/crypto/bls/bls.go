@@ -189,7 +189,7 @@ func (privKey PrivKeyBLS) Bytes() []byte {
 }
 
 // Sign create signature
-func (privKey PrivKeyBLS) Sign(msg []byte, opts ...interface{}) crypto.Signature {
+func (privKey PrivKeyBLS) Sign(msg []byte) crypto.Signature {
 	k := bls.SecretKey{}
 	k.Deserialize(privKey[:])
 
@@ -200,7 +200,7 @@ func (privKey PrivKeyBLS) Sign(msg []byte, opts ...interface{}) crypto.Signature
 }
 
 // PubKey convert to public key
-func (privKey PrivKeyBLS) PubKey(opts ...interface{}) crypto.PubKey {
+func (privKey PrivKeyBLS) PubKey() crypto.PubKey {
 	k := bls.SecretKey{}
 	err := k.Deserialize(privKey[:])
 	if err != nil {

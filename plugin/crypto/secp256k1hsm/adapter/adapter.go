@@ -17,6 +17,7 @@ package adapter
 //unsigned int *signatureLenPtr = &signatureLen;
 //unsigned int sigV = 0;
 //unsigned int *sigVPtr = &sigV;
+
 //int setupHSM()
 //{
 //    auto rt = SDF_OpenDevice(&g_hDev);
@@ -91,18 +92,23 @@ func ReleaeAccessRight(keyIndex int) error {
 
 //通过硬件进行secp256k1签名
 func SignSecp256k1(msg []byte, keyIndex int) (signatureR, signatureS []byte, signatureV byte, err error) {
+
 	hash := goSDKSh256.Sum256(msg)
 	hash2sign := (*C.uchar)(C.CBytes(hash[:]))
 	defer C.free(unsafe.Pointer(hash2sign))
 
+
 	rt := C.TassECCPrivateKeySign_RFC(C.g_hSess, C.TA_ALG_ECC_SECP_256K1, C.uint(keyIndex), C.uint(256), C.skCipherByKek, C.uint(0), hash2sign, C.uint(32), C.sigVPtr, C.RSPtr, C.signatureLenPtr)
     if SDF_Success != rt {
 		return nil, nil, 0, errors.New(fmt.Sprintf("TassECCPrivateKeySign failed %#08x", int(rt)))
+
 	}
 
 	r := C.GoBytes(unsafe.Pointer(&C.RS[0]), C.int(32))
 	s := C.GoBytes(unsafe.Pointer(&C.RS[32]), C.int(32))
+
 	return r, s, byte(C.sigV), nil
+
 }
 
 //通过硬件进行secp256k1签名
@@ -111,6 +117,7 @@ func SignSecp256k1WithHash(hash []byte, keyIndex int) (signatureR, signatureS []
 	defer C.free(unsafe.Pointer(hash2sign))
 
 	rt := C.TassECCPrivateKeySign_RFC(C.g_hSess, C.TA_ALG_ECC_SECP_256K1, C.uint(keyIndex), C.uint(256), C.skCipherByKek, C.uint(0), hash2sign, C.uint(32), C.sigVPtr, C.RSPtr, C.signatureLenPtr)
+
 	if SDF_Success != rt {
 		return nil, nil, errors.New(fmt.Sprintf("TassECCPrivateKeySign failed %#08x", int(rt)))
 	}
@@ -156,8 +163,8 @@ func SignSM2Internal(msg []byte, keyIndex int) (signatureR, signatureS []byte, e
 	return r, s, nil
 }
 
+
 func MakeRSVsignature(rb, sb []byte, vb byte) []byte {
-	//vb := byte(0)
 	var signature []byte
 	signature = append(signature, rb...)
 	signature = append(signature, sb...)

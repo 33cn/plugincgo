@@ -41,7 +41,9 @@ func main() {
 	fmt.Println("   ")
 
 	passwd := "a1234567"
+
 	for keyIndex := 1; keyIndex <= 4; keyIndex++ {
+
 	    keyIndex := 2
 		if err := adapter.GetPrivateKeyAccessRight(passwd, keyIndex); nil != err {
 			panic("Failed to GetPrivateKeyAccessRight")
@@ -54,13 +56,17 @@ func main() {
 		if err := adapter.ReleaeAccessRight(keyIndex); nil != err {
 			panic("Failed to GetPrivateKeyAccessRight")
 		}
+
 	}
+
 	adapter.CloseHSMSession()
 }
 
 func verifySecp256k1(keyIndex int) {
 	msg, _ := common.FromHex("456789")
+
 	r, s, v, err := adapter.SignSecp256k1(msg, keyIndex)
+
 	if err != nil {
 		panic("Failed to SignSecp256k1 due to:" + err.Error())
 	}
@@ -73,6 +79,7 @@ func verifySecp256k1(keyIndex int) {
 	hash := crypto.Sha256(msg)
 
 	sig := adapter.MakeRSVsignature(r, s, v)
+
 	fmt.Println(" sig ", common.ToHex(sig))
 
 	pubRecoverd, err := ethCrypto.Ecrecover(hash[:], sig)
