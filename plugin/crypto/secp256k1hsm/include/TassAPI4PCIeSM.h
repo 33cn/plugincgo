@@ -15,7 +15,6 @@ extern "C" {
 	*							输出时，标识输出id长度，通过 *idLen / TA_DEVICE_ID_SIZE 获取设备数量
 	*
 	* @return 成功返回0，失败返回非0
-	*
 	*/
 	int TassScanDevice(unsigned char* id, unsigned int* idLen);
 
@@ -26,7 +25,6 @@ extern "C" {
 	* @param phDevice		[out]	返回设备句柄
 	*
 	* @return 成功返回0，失败返回非0
-	*
 	*/
 	int TassOpenDevice(unsigned char id[TA_DEVICE_ID_SIZE], void** phDevice);
 
@@ -36,7 +34,6 @@ extern "C" {
 	* @param pDevice		[in]	已打开的设备句柄
 	*
 	* @return 成功返回0，失败返回非0
-	*
 	*/
 	int TassCloseDevice(void* hDevice);
 
@@ -47,7 +44,6 @@ extern "C" {
 	* @param hSess		[out]	打开的会话句柄
 	*
 	* @return 成功返回0，失败返回非0
-	*
 	*/
 	int TassOpenSession(void* hDevice, void** phSess);
 
@@ -57,17 +53,15 @@ extern "C" {
 	* @param hSess		[in]	已打开的会话句柄
 	*
 	* @return 成功返回0，失败返回非0
-	*
 	*/
 	int TassCloseSession(void* hSess);
 
-	/**
+	/*
 	* @brief 设置超时时间
 	*
 	* @param timout	 [in]	超时时间，毫秒
 	*
 	* @return 成功返回0，失败返回非0
-	*
 	*/
 	int TassSetTimeout(void* hDevice, int timout);
 
@@ -77,7 +71,6 @@ extern "C" {
 	* @param timout	 [out]	超时时间，毫秒
 	*
 	* @return 成功返回0，失败返回非0
-	*
 	*/
 	int TassGetTimeout(void* hDevice, int* timout);
 
@@ -313,7 +306,6 @@ extern "C" {
 	* @param pk						[in]	公钥
 	* @param skEnvelopByDevSignPk	[in]	设备签名公钥加密的私钥私钥信封
 	* @param cb						[in]	（平台公钥对应私钥）签名回调
-
 	*
 	* @retval	成功返回0，失败返回非0
 	*
@@ -347,7 +339,6 @@ extern "C" {
 	*
 	* @param hSess             [in]	 会话句柄
 	* @param cb                [in]  （平台公钥对应私钥）签名回调
-
 	*
 	* @retval	成功返回0，失败返回非0
 	*
@@ -381,7 +372,6 @@ extern "C" {
 		unsigned char authCode[4]);
 
 	/*
-	3.3.1
 	* @brief 扩展认证保护密钥
 	*
 	* @param hSess             [in]	 会话句柄
@@ -403,26 +393,39 @@ extern "C" {
 		unsigned char authCode[4]);
 
 	/*
-	3.3.3
-	同时适用于19150
+	* @brief 生成SM2密钥对 
+	*
+	* @param hSess             [in]	 会话句柄
+	* @param skCipherByKek	   [out] SM2私钥密文
+	* @param pk		           [out] SM2公钥
+
+	*
+	* @retval	成功返回0，失败返回非0
+	 
 	*/
 	int TassGenSM2KeyPair(void* hSess,
 		unsigned char skCipherByKek[32],
 		unsigned char pk[64]);
 
 	/*
-	3.3.4
-	同时适用于19150
-	密钥信息校验值，为NULL时不输出
+	* @brief  生成SM4密钥 
+	*
+	* @param hSess             [in]	 会话句柄
+	* @param keyCipherByKek	   [out] 密钥密文
+	* @param kcv		       [out] 密钥校验值
 	*/
 	int TassGenSM4Key(void* hSess,
 		unsigned char keyCipherByKek[16],
 		unsigned char kcv[16]);
 
 	/*
-	3.3.7
-	同时适用于19150
-	密钥信息校验值，为NULL时不输出
+	* @brief 生成SM4密钥并用指定密钥加密保护
+	*
+	* @param hSess                     [in]	 会话句柄
+	* @param protectKeyCipherByKek	   [in]  保护密钥密文
+	* @param keyCipherByProtectKey	   [out] 保护密钥加密的密钥密文
+	* @param keyCipherByKek	           [out] KEK密钥加密的密钥密文 
+	* @param kcv                       [out] 密钥校验值
 	*/
 	int TassGen_ExportSM4KeyBySM4Key(void* hSess,
 		const unsigned char protectKeyCipherByKek[16],
@@ -431,17 +434,27 @@ extern "C" {
 		unsigned char kcv[16]);
 
 	/*
-	3.3.8
-	同时适用于19150
+    * @brief 通过SM2公钥输出私钥
+	*
+	* @param hSess                     [in]	 会话句柄
+	* @param protectPk          	   [in]  SM2本地保护密钥公钥
+	* @param authCode           	   [in]  认证码
+	* @param skCipherByKe	           [in]  业务密钥私钥密文
+	* @param skEnvelopByProtectPk      [out] SM2私钥信封
 	*/
 	int TassExportSM2PrivateKeyBySM2PublicKey(void* hSess,
 		const unsigned char protectPk[64],
 		const unsigned char authCode[4],
 		const unsigned char skCipherByKek[32],
 		unsigned char skEnvelopByProtectPk[144]);
+
 	/*
-	3.3.9
-	同时适用于19150
+	* @brief 通过SM2私钥导入SM2私钥
+	*
+	* @param hSess                     [in]	 会话句柄
+	* @param protectSkCipherByKek      [in]  解密私钥密文
+	* @param skEnvelopByProtectPk      [in]  SM2私钥信封（随机对称密钥密文+业务密钥私钥密文（SM4））
+	* @param skCipherByKek             [out] SM2业务密钥私钥密文 
 	*/
 	int TassImportSM2PrivateKeyBySM2PrivateKey(void* hSess,
 		const unsigned char protectSkCipherByKek[32],
@@ -449,9 +462,14 @@ extern "C" {
 		unsigned char skCipherByKek[32]);
 
 	/*
-	3.3.12
-	同时适用于19150
-	密钥信息校验值，为NULL时不输出
+	* @brief 通过SM4私钥输出SM2公钥
+	*
+	* @param hSess                     [in]	 会话句柄
+	* @param protectPk                 [in]  SM2公钥
+	* @param authCode                  [in]  认证码
+	* @param keyCipherByKek            [in]  SM4密钥密文()
+	* @param keyCipherByProtectPk      [out] SM4密钥密文()
+	* @param kcv                       [out] 密钥校验值
 	*/
 	int TassExportSM4KeyBySM2PublicKey(void* hSess,
 		const unsigned char protectPk[64],
@@ -461,8 +479,13 @@ extern "C" {
 		unsigned char kcv[16]);
 
 	/*
-	3.3.13
-	同时适用于19150
+	* @brief 通过SM2私钥输出SM4密钥
+	*
+	* @param hSess                     [in]	 会话句柄
+	* @param protectSkCipherByKek      [in]  私钥密文
+	* @param keyCipherByProtectPk      [in]  业务密钥密文
+	* @param kcv                       [in]  密钥校验值
+	* @param  keyCipherByKek           [out] 业务密钥密文 
 	*/
 	int TassImportSM4KeyBySM2PrivateKey(void* hSess,
 		const unsigned char protectSkCipherByKek[32],
@@ -471,8 +494,13 @@ extern "C" {
 		unsigned char keyCipherByKek[16]);
 
 	/*
-	3.3.16
-	同时适用于19150
+	* @brief 通过SM4密钥导入SM4密钥
+	*
+	* @param hSess                     [in]	 会话句柄
+	* @param protectKeyCipherByKek     [in]  保护密钥密文 
+	* @param keyCipherByProtectKey     [in]  SM4密钥密文
+	* @param kcv                       [in]  密钥校验值
+	* @param  keyCipherByKek           [out] SM4密钥密文
 	*/
 	int TassImportSM4KeyBySM4Key(void* hSess,
 		const unsigned char protectKeyCipherByKek[16],
@@ -481,9 +509,18 @@ extern "C" {
 		unsigned char keyCipherByKek[16]);
 
 	/*
-	3.3.17
-	密钥信息校验值，为NULL时不输出
-	仅导出SM2和SM4密钥
+	* @brief 通过SM4密钥导入SM4密钥
+	*
+	* @param hSess                     [in]	  会话句柄
+	* @param protectKeyCipherByKek     [in]   保护密钥密文
+	* @param authCode                  [in]   认证码
+	* @param alg                       [in]   密钥类型 
+	* @param keyCipherByKek            [in]   指定密钥密钥密文 
+	* @param keyCipherByKekLen         [in]   指定密钥密钥密文长度
+	* @param keyCipherByProtectKey     [out]  指定密钥加密的密文
+	* @param keyCipherByProtectKeyLen  [out]  指定密钥加密的密文长度
+	* @param kcv                       [out]  密钥校验值
+	
 	*/
 	int TassExportKeyBySM4Key(void* hSess,
 		const unsigned char protectKeyCipherByKek[16],
@@ -494,7 +531,14 @@ extern "C" {
 		unsigned char kcv[16]);
 
 	/*
-	3.3.4
+	* @brief 生成对称密钥
+	*
+	* @param hSess                     [in]	  会话句柄
+	* @param keyAlg                    [in]   密钥类型
+	* @param keyBits                   [in]   密钥模长
+	* @param keyCipherByKek            [out]  KEK加密的随机对称密钥密文
+	* @param keyCipherByKekLen         [out]  EK加密的随机对称密钥密文长度
+	* @param kcv                       [out]  对称密钥校验值
 	*/
 	int TassGenSymmKey(void* hSess,
 		TassAlg keyAlg,
@@ -503,7 +547,6 @@ extern "C" {
 		unsigned char kcv[16]);
 
 	/*
-	3.3.5
 	* @brief 生成非对称密钥
 	*
 	* @param hSess						[in]	会话句柄
@@ -526,7 +569,6 @@ extern "C" {
 		unsigned char* pk, unsigned int* pkLen);
 
 	/*
-	3.3.9
 	* @brief 将非对称私钥转加密（本地保护密钥 KEK 加密转为SM2加密）
 	*
 	* @param hSess						[in]	会话句柄
@@ -556,7 +598,6 @@ extern "C" {
 
 
 	/*
-	3.3.11
 	* @brief 将非对称私钥转加密（SM2加密转为本地保护密钥KEK加密）
 	*
 	* @param hSess						[in]	会话句柄
@@ -596,7 +637,6 @@ extern "C" {
 		unsigned char kcv[16]);
 
 	/*
-	3.3.15
 	* @brief 将对称密钥转加密（外部密钥加密转为本地保护密钥 KEK 加密）
 	*
 	* @param hSess						[in]	会话句柄
@@ -626,15 +666,22 @@ extern "C" {
 
 	/*
 	* 密码运算类指令
+	* @brief 生成随机数
+	* @param hSess						[in]	会话句柄
+	* @param randomLen				    [in]	随机数长度
+	* @param random        			    [out]	随机数
 	*/
-
 	int TassGenRandom(void* hSess,
 		unsigned int randomLen,
 		unsigned char* random);
 
 	/*
-	3.4.2 + 4.2.1
-	同时适用于19150
+	* @brief SM2私钥对hash值签名
+	* @param hSess						[in]	会话句柄
+	* @param index						[in]	密钥索引
+	* @param skCipherByKek        		[out]	32字节的私钥密文
+	* @param hash        			    [out]	32字节哈希值
+	* @param hash        			    [out]	64字节签名值
 	*/
 	int TassSM2PrivateKeySign(void* hSess,
 		unsigned int index,
@@ -643,8 +690,12 @@ extern "C" {
 		unsigned char sig[64]);
 
 	/*
-	3.4.3 + 4.2.2
-	同时适用于19150
+	* @brief SM2公钥验签
+	* @param hSess					[in]	会话句柄
+	* @param index				    [in]	密钥索引
+	* @param pk       			    [in]	SM2公钥（仅当index==0时不为NULL）
+	* @param hash				    [in]	hash数据
+	* @param sig       			    [out]	签名结果
 	*/
 	int TassSM2PublicKeyVerify(void* hSess,
 		unsigned int index,
@@ -653,8 +704,14 @@ extern "C" {
 		const unsigned char sig[64]);
 
 	/*
-	3.4.4 + 4.2.3
-	同时适用于19150
+	* @brief SM2公钥加密
+	* @param hSess					[in]	会话句柄
+	* @param index				    [in]	密钥索引
+	* @param pk       			    [in]	SM2公钥（仅当index==0时不为NULL）
+	* @param plain				    [in]	数据明文
+	* @param plainLen				[in]	数据明文长度
+	* @param cipher       			[out]	数据密文
+    * @param cipherLen       	    [out]	数据密文长度
 	*/
 	int TassSM2PublicKeyEncrypt(void* hSess,
 		unsigned int index,
@@ -663,8 +720,14 @@ extern "C" {
 		unsigned char* cipher, unsigned int* cipherLen);
 
 	/*
-	3.4.5 + 4.2.4
-	同时适用于19150
+	* @brief SM2私钥解密
+	* @param hSess					[in]	会话句柄
+	* @param index				    [in]	密钥索引
+	* @param skCipherByKek          [in]	SM2私钥（仅当index==0时不为NULL）
+	* @param cipher				    [in]	数据密文
+	* @param cipherLen				[in]	数据密文长度
+	* @param plain       			[out]	数据明文
+	* @param plainLen       	    [out]	数据明文长度
 	*/
 	int TassSM2PrivateKeyDecrypt(void* hSess,
 		unsigned int index,
@@ -673,8 +736,23 @@ extern "C" {
 		unsigned char* plain, unsigned int* plainLen);
 
 	/*
-	3.4.6 + 4.2.5
-	同时适用于19150
+	* @brief SM2密钥协商
+	* @param hSess					[in]	会话句柄
+	* @param sponsor			    [in]	己方标识（0为发起方，1为应答方）
+	* @param selfIndex              [in]	己方密钥索引
+	* @param selfSkCipherByKek      [in]    己方私钥密文 
+	* @param selfPk                 [in]    己方公钥
+	* @param selfTmpSkCipherByKek   [in]    己方临时私钥密文
+	* @param selfTmpPk              [in]    己方临时公钥 
+	* @param selfId                 [in]    己方ID 
+	* @param selfIdLen              [in]    己方ID长度
+	* @param peerPk                 [in]    对方公钥 
+	* @param peerTmpPk              [in]    对方临时公钥 
+	* @param peerId                 [in]    对方ID
+	* @param peerIdLen              [in]    对方ID长度
+	* @param keyBytes               [in]    协商长度
+	* @param genPlainKey            [in]   
+	* @param key                    [out]   协商结果 
 	*/
 	int TassSM2KeyExchange(void* hSess,
 		TassBool sponsor,
@@ -775,6 +853,18 @@ extern "C" {
 
 	/*
 	3.4.10 + 4.2.9
+	* @brief RSA私钥运算
+	*
+	* @param hSess						[in]	会话句柄
+	* @param index						[in]	密钥索引
+	* @param keyBits				    [in]	模长（支持2048）当index==0时，为0
+	* @param skCipherByKek				[in]	私钥密文 当index==0时，为NULL
+	* @param skCipherByKekLen			[in]	私钥密文长度 当index==0时，为0
+	* @param inData						[in]	输入数据 
+	* @param inDataLen					[in]	输入数据长度
+	* @param outData					[out]	运算结果
+	*
+	* @retval	成功返回0，失败返回非0
 	*/
 	int TassRSAPrivateKeyOperate(void* hSess,
 		unsigned int index,
@@ -784,7 +874,17 @@ extern "C" {
 		unsigned char* outData);
 
 	/*
-	3.4.11 + 4.2.10
+	* @brief RSA公钥运算
+	* @param hSess						[in]	会话句柄
+	* @param index						[in]	密钥索引
+	* @param keyBits				    [in]	模长（支持2048）当index==0时，为0
+	* @param skCipherByKek				[in]	公钥 当index==0时，为NULL
+	* @param skCipherByKekLen			[in]	公钥长度 当index==0时，为0
+	* @param inData						[in]	输入数据
+	* @param inDataLen					[in]	输入数据长度
+	* @param outData					[out]	运算结果
+	*
+	* @retval	成功返回0，失败返回非0
 	*/
 	int TassRSAPublicKeyOperate(void* hSess,
 		unsigned int index,
@@ -794,8 +894,18 @@ extern "C" {
 		unsigned char* outData);
 
 	/*
-	3.4.12 + 4.2.6
 	同时适用于19150
+	* @brief SM4密钥运算
+	* @param hSess						[in]	会话句柄
+	* @param op                         [in]    分组加解密模式
+	* @param index						[in]	密钥索引
+	* @param keyCipherByKek				[in]	SM4密钥密文 当inde为0时有效
+	* @param iv                 		[in]	初始向量
+	* @param inData						[in]	输入数据
+	* @param inDataLen					[in]	输入数据长度
+	* @param outData					[out]	运算结果
+	*
+	* @retval	成功返回0，失败返回非0
 	*/
 	int TassSM4KeyOperate(void* hSess,
 		TassSymmOp op,
@@ -806,7 +916,21 @@ extern "C" {
 		unsigned char* outData);
 
 	/*
-	3.4.13 + 4.2.11
+	* @brief 对称密钥运算
+	* @param hSess						[in]	会话句柄
+	* @param alg                        [in]    对称算法标识
+	* @param keyBits                    [in]    密钥模长
+	* @param op                         [in]    分组加解密模式
+	* @param index						[in]	密钥索引
+	* @param keyCipherByKek				[in]	密钥密文 当index！=0时为NULL
+	* @param keyCipherByKekLen          [in]    密文密钥长度 当index！=0时为0
+	* @param iv                 		[in]	初始向量
+	* @param inData						[in]	输入数据
+	* @param inDataLen					[in]	输入数据长度
+	* @param outData					[out]	运算结果
+	* @param outDataLen                 [out]   运算结果模长
+	*
+	* @retval	成功返回0，失败返回非0
 	*/
 	int TassSymmKeyOperate(void* hSess,
 		TassAlg alg,
@@ -818,24 +942,65 @@ extern "C" {
 		const unsigned char* inData, unsigned int inDataLen,
 		unsigned char* outData, unsigned int* outDataLen);
 
+	/*
+	* @brief SM3签名运算
+	* @param hSess						[in]	会话句柄
+	* @param pk                         [in]    签名公钥
+	* @param id						    [in]	
+	* @param idLen				        [in]	
+	* @param data                		[in]	数据 
+	* @param dataLen					[in]	数据长度
+	* @param hash				        [out]	HASH结果 
+	*
+	* @retval	成功返回0，失败返回非0
+	*/
 	int TassSM3Single(void* hSess,
 		const unsigned char pk[64],
 		const unsigned char* id, unsigned int idLen,
 		const unsigned char* data, unsigned int dataLen,
 		unsigned char hash[32]);
 
-	int TassSM3Init(void* hSess,
+	/*@brief 多包计算初始化
+	* @param hSess     [in]	    会话句柄
+	* @param uiAlgID   [in]     算法标识
+	* @param pk        [in]     签名公钥
+	* @param id        [in]
+	* @param idLen     [in]
+	* @param data      [in]  	数据
+	* @param dataLen   [in] 	数据长度
+	* @param ctx       [out]	HASH上下文
+	*
+	* @retval	成功返回0，失败返回非0
+	*/
+	int TassHashInit(void* hSess,
 		unsigned int uiAlgID,
 		const unsigned char pk[64],
 		const unsigned char* id, unsigned int idLen,
-		unsigned char ctx[112]);
+		unsigned char* ctx, unsigned int* ctxLen);
 
-	int TassSM3Update(void* hSess,
+	/*
+	* @brief 多包计算update
+	* @param hSess     [in]	    会话句柄
+	* @param data      [in]  	数据
+	* @param dataLen   [in] 	数据长度
+	* @param ctx       [out]	HASH上下文
+	*
+	* @retval	成功返回0，失败返回非0
+	*/
+	int TassHashUpdate(void* hSess,
 		const unsigned char* data, unsigned int dataLen,
-		unsigned char ctx[112]);
+		unsigned char* ctx, unsigned int* ctxLen);
 
-	int TassSM3Final(void* hSess,
-		const unsigned char ctx[112],
+	/*
+	* @brief 多包计算final 
+	* @param hSess     [in]	    会话句柄
+	* @param ctx       [in]  	HASH上下文
+	* @param hash      [out]	HASH结果
+	*
+	* @retval	成功返回0，失败返回非0
+	*/
+	int TassHashFinal(void* hSess,
+		const unsigned char* ctx, unsigned int ctxLen,
 		unsigned char hash[32]);
 
 	/*
@@ -846,16 +1011,27 @@ extern "C" {
 	*/
 
 	/*
-	4.1.1
-	同时适用19150
+	* @brief 获取密钥索引信息
+	* @param hSess     [in]	    会话句柄
+	* @param alg       [in]  	算法标识
+	* @param info      [out]	索引信息
+	* @param infoLen   [out]    索引信息长度
+	*
+	* @retval	成功返回0，失败返回非0
 	*/
 	int TassGetIndexInfo(void* hSess,
 		TassAlg alg,
 		unsigned char* info, unsigned int* infoLen);
 
 	/*
-	4.1.2
-	同时适用19150
+	*@brief 依据索引设置密钥标签
+	* @param hSess     [in]	    会话句柄
+	* @param alg       [in]  	密钥标识
+	* @param index     [in]	    密钥索引
+	* @param label     [in]	    密钥标签
+	* @param labelLen  [in]	    密钥标签长度 
+	*
+	* @retval	成功返回0，失败返回非0
 	*/
 	int TassSetLabel(void* hSess,
 		TassAlg alg,
@@ -863,8 +1039,14 @@ extern "C" {
 		const unsigned char* label, unsigned int labelLen);
 
 	/*
-	4.1.3
-	同时适用19150
+	*@brief 依据索引获取密钥标签
+	* @param hSess     [in]	    会话句柄
+	* @param alg       [in]  	密钥标识
+	* @param index     [in]	    密钥索引
+	* @param label     [in]	    密钥标签
+	* @param labelLen  [in]	    密钥标签长度
+	*
+	* @retval	成功返回0，失败返回非0
 	*/
 	int TassGetLabel(void* hSess,
 		TassAlg alg,
@@ -872,18 +1054,21 @@ extern "C" {
 		unsigned char* label, unsigned int* labelLen);
 
 	/*
-	4.1.4
-	同时适用19150
+	*@brief 依据索引设置密钥标签
+	* @param hSess     [in]	    会话句柄
+	* @param alg       [in]  	密钥标识
+	* @param index     [in]	    密钥索引
+	* @param label     [in]	    密钥标签
+	* @param labelLen  [in]	    密钥标签长度
+	* @param index     [out]    密钥索引 
+	*
+	* @retval	成功返回0，失败返回非0
 	*/
 	int TassGetIndex(void* hSess,
 		TassAlg alg,
 		const unsigned char* label, unsigned int labelLen,
 		unsigned int* index);
 
-	/*
-	4.1.5
-	同时适用19150
-	*/
 	/*
 	* @brief 依据索引设置密钥属性
 	*
@@ -904,10 +1089,6 @@ extern "C" {
 		const unsigned char* attr, unsigned int attrLen);
 
 	/*
-	4.1.6
-	同时适用19150
-	*/
-	/*
 	* @brief 依据索引获取密钥属性
 	*
 	* @param hSess				[in]	会话句柄
@@ -918,7 +1099,6 @@ extern "C" {
 	* @param attrLen			[out]	密钥属性长度
 	*
 	* @retval	成功返回0，失败返回非0
-	*
 	*/
 	int TassGetAttr(void* hSess,
 		TassAlg alg,
@@ -927,8 +1107,16 @@ extern "C" {
 		unsigned char* attr, unsigned int* attrLen);
 
 	/*
-	4.1.10
-	同时适用19150
+	*
+	* @param hSess				[in]	会话句柄
+	* @param index				[in]	密钥索引
+	* @param label				[in]	密钥标签
+	* @param labelLen			[in]	密钥标签长度
+	* @param usage				[in]	0-签名密钥，1-加密密钥，2-密钥协商密钥
+	* @param skCipherByKek	    [in]	私钥密文
+	* @param pk				    [out]	 公钥
+	*
+	* @retval	成功返回0，失败返回非0
 	*/
 	int TassStoreSM2KeyPair(void* hSess,
 		unsigned int index,
@@ -937,8 +1125,7 @@ extern "C" {
 		const unsigned char skCipherByKek[32],
 		const unsigned char pk[64]);
 
-	/**
-	4.1.11
+	/*
 	* @brief 导入非对称密钥到密码卡
 	*
 	* @param hSess              [in]	会话句柄
@@ -953,7 +1140,6 @@ extern "C" {
 	* @param pkLen				[in]	公钥长度
 	*
 	* @retval	成功返回0，失败返回非0
-	*
 	*/
 	int TassStoreAsymKeyPair(void* hSess,
 		TassAlg alg,
@@ -964,8 +1150,18 @@ extern "C" {
 		const unsigned char* pk, unsigned int pkLen);
 
 	/*
-	4.1.12
-	同时适用19150
+	* @brief 导入SM4称密钥到密码卡
+	*
+	* @param hSess              [in]	会话句柄
+	* @param alg				[in]	密钥类型
+	* @param index				[in]	密钥索引，0-64，当密钥类型是 RSA 是为 0-4
+	* @param label				[in]	密钥标签
+	* @param labelLen			[in]	密钥标签长度
+	* @param skCipherByKek		[in]	私钥密文
+	* @param skCipherByKekLen	[in]	私钥密文长度
+	* @param kcv				[in]	密钥校验值 
+	*
+	* @retval	成功返回0，失败返回非0
 	*/
 	int TassStoreSM4Key(void* hSess,
 		unsigned int index,
@@ -974,7 +1170,18 @@ extern "C" {
 		const unsigned char kcv[16]);
 
 	/*
-	4.1.13
+	* @brief 导入对称密钥到密码卡
+	*
+	* @param hSess              [in]	会话句柄
+	* @param alg				[in]	密钥类型
+	* @param index				[in]	密钥索引，0-64，当密钥类型是 RSA 是为 0-4
+	* @param label				[in]	密钥标签
+	* @param labelLen			[in]	密钥标签长度
+	* @param skCipherByKek		[in]	私钥密文
+	* @param skCipherByKekLen	[in]	私钥密文长度
+	* @param kcv				[in]	密钥校验值
+	*
+	* @retval	成功返回0，失败返回非0
 	*/
 	int TassStoreSymmKey(void* hSess,
 		TassAlg alg,
@@ -984,8 +1191,13 @@ extern "C" {
 		const unsigned char kcv[16]);
 
 	/*
-	4.1.14
-	同时适用19150
+	* @brief 摧毁密钥
+	* @param hSess              [in]	会话句柄
+	* @param alg				[in]	密钥类型
+	* @param usage              [in]    密钥用途 0签名密钥 1加密密钥 2密钥协商密钥
+	* @param index				[in]	密钥索引，0-64，当密钥类型是 RSA 是为 0-4
+	*
+	* @retval	成功返回0，失败返回非0
 	*/
 	int TassDestroyKey(void* hSess,
 		TassAlg alg,
@@ -993,8 +1205,13 @@ extern "C" {
 		unsigned int index);
 
 	/*
-	4.1.8
-	同时适用19150
+	* @brief  获取SM2公钥 
+	* @param hSess              [in]	会话句柄
+	* @param index				[in]	密钥索引
+	* @param usage              [in]    密钥用途 0签名密钥 1加密密钥 2密钥协商密钥
+	* @param pk			      	[in]	SM2公钥X||Y 
+	*
+	* @retval	成功返回0，失败返回非0
 	*/
 	int TassGetSM2PublicKey(void* hSess,
 		unsigned int index,
@@ -1008,10 +1225,6 @@ extern "C" {
 		unsigned char* pk, unsigned int* pkLen);
 
 	/*
-	4.1.14
-	同时适用19150
-	*/
-	/*
 	* @brief 依据索引设置密钥属性
 	*
 	* @param hSess					[in]	会话句柄
@@ -1024,7 +1237,6 @@ extern "C" {
 	* @param sk_keyCipherByKekLen	[in/out]公钥长度
 	*
 	* @retval	成功返回0，失败返回非0
-	*
 	*/
 	int TassGetKey(void* hSess,
 		TassAlg alg,
@@ -1034,8 +1246,16 @@ extern "C" {
 		unsigned char* pk_kcv, unsigned int* pk_kcvLen);
 
 	/*
-	4.1.16 + 4.1.17
-	2K FLASH 操作同时适用19150
+	* @brief FLSH标识
+	*
+	* @param hSess                  [in]	会话句柄
+	* @param flag				    [in]	FLASH操作模式
+	* @param op				        [in]	FLASH操作类型
+	* @param offset					[in]	偏移起始地址 
+	* @param dataLen				[in]	数据长度
+	* @param data		            [in]	数据
+	*
+	* @retval	成功返回0，失败返回非0
 	*/
 	int TassFlashOperate(void* hSess,
 		TassFlashFlag flag,
@@ -1044,8 +1264,7 @@ extern "C" {
 		unsigned int dataLen,
 		unsigned char* data);
 
-	/**
-	4.2.10
+	/*
 	* @brief ECC 密钥协商
 	*
 	* @param hSess              [in]	会话句柄
@@ -1057,7 +1276,6 @@ extern "C" {
 	* @param agreementDataLen	[out]	协商结果长度
 	*
 	* @retval	成功返回0，失败返回非0
-	*
 	*/
 	int TassGenerateAgreementDataWithECC(void* hSess, 
 		TassAlg alg, 
@@ -1069,8 +1287,7 @@ extern "C" {
 	* HMAC计算
 	*/
 
-	/**
-	3.4.20、4.2.14
+	/*
 	* @brief HMAC单包计算
 	*
 	* @param hSess              [in]	会话句柄
@@ -1083,7 +1300,6 @@ extern "C" {
 	* @param hmacLen			[out]	HMAC 结果长度
 	*
 	* @retval	成功返回0，失败返回非0
-	*
 	*/
 	int TassHmacSingle(void* hSess,
 		unsigned int index,
@@ -1091,8 +1307,7 @@ extern "C" {
 		unsigned char* data, unsigned int dataLen,
 		unsigned char* hmac, unsigned int* hmacLen);
 
-	/**
-	3.4.21、4.2.15
+	/*
 	* @brief HMAC多包计算init
 	*
 	* @param hSess              [in]	会话句柄
@@ -1101,14 +1316,12 @@ extern "C" {
 	* @param keyLen				[in]	密钥密文长度，16/32/48/64，最大 64 字节，索引为0时有效，仅支持HMAC密钥
 	*
 	* @retval	成功返回0，失败返回非0
-	*
 	*/
 	int TassHmacInit(void* hSess,
 		unsigned int index,
 		unsigned char* key, unsigned int keyLen);
 
-	/**
-	3.4.22
+	/*
 	* @brief HMAC多包计算update
 	*
 	* @param hSess              [in]	会话句柄
@@ -1116,12 +1329,10 @@ extern "C" {
 	* @param dataLen			[in]	数据长度，长度只能是64 字节的倍数
 	*
 	* @retval	成功返回0，失败返回非0
-	*
 	*/
 	int TassHmacUpdate(void* hSess, unsigned char* data, unsigned int dataLen);
 
-	/**
-	3.4.23、4.2.16
+	/*
 	* @brief HMAC多包计算final
 	*
 	* @param hSess              [in]	会话句柄
@@ -1129,11 +1340,10 @@ extern "C" {
 	* @param hmacLen			[out]	HMAC 结果长度
 	*
 	* @retval	成功返回0，失败返回非0
-	*
 	*/
 	int TassHmacFinal(void* hSess, unsigned char* hmac, unsigned int* hmacLen);
 
-	/**
+	/*
 	* @brief	获取密码设备内部存储的指定索引私钥的使用权
 	* @param	hSessionHandle	[IN]	与设备建立的会话句柄
 	* @param	uiKeyIndex		[IN]	密码设备存储私钥的索引值
@@ -1151,6 +1361,32 @@ extern "C" {
 		TassAlg uiAlgID,
 		unsigned char* pucPassword,
 		unsigned int uiPwdLength);
+
+	/*
+	* @brief ECC私钥签名（以太坊曲线）
+	*
+	* @param hSess						[in]	会话句柄
+	* @param alg						[in]	ECC密钥类型，TA_ALG_ECC_SECP_256R1/TA_ALG_ECC_SECP_256K1
+	* @param index						[in]	索引
+	* @param keyBits					[in]	模长，ECC_256R1和ECC_256K1均为256，索引为0时有效
+	* @param skCipherByKek				[in]	签名私钥，索引为0时有效
+	* @param skCipherByKekLen			[in]	签名私钥长度，索引为0时有效
+	* @param hash						[in]	哈希值
+	* @param hashLen					[in]	哈希值长度
+	* @param value						[out]	V值
+	* @param sig						[out]	签名值
+	* @param sigLen						[out]	签名值长度
+	*
+	* @retval	成功返回0，失败返回非0
+	*/
+	int TassECCPrivateKeySign_RFC(void* hSess,
+		TassAlg alg,
+		unsigned int index,
+		unsigned int keyBits,
+		const unsigned char* skCipherByKek, unsigned int skCipherByKekLen,
+		const unsigned char* hash, unsigned int hashLen,
+		unsigned int* value,
+		unsigned char* sig, unsigned int* sigLen);
 
 #ifdef __cplusplus
 }
