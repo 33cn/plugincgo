@@ -44,13 +44,13 @@ func main() {
 
 	for keyIndex := 1; keyIndex <= 4; keyIndex++ {
 
-	    keyIndex := 2
+		keyIndex := 2
 		if err := adapter.GetPrivateKeyAccessRight(passwd, keyIndex); nil != err {
 			panic("Failed to GetPrivateKeyAccessRight")
 		}
 
 		for i := 0; i < 20; i++ {
-			time.Sleep(time.Millisecond*1000)
+			time.Sleep(time.Millisecond * 1000)
 			verifySecp256k1(keyIndex)
 		}
 		if err := adapter.ReleaeAccessRight(keyIndex); nil != err {

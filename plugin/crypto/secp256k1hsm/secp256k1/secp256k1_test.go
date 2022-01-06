@@ -75,7 +75,7 @@ func Test_Verify4Eth(t *testing.T) {
 	msg := []byte("456789")
 	hash := crypto.Sha256(msg)
 	fmt.Println("hash  = ", common.Bytes2Hex(hash))
-    hash1 := goSh256.Sum256(msg)
+	hash1 := goSh256.Sum256(msg)
 	fmt.Println("hash1 = ", common.Bytes2Hex(hash1[:]))
 
 	pubRecoverd, err := ethCrypto.Ecrecover(hash[:], sig)
@@ -138,16 +138,16 @@ func Test_btcsecp256k1(t *testing.T) {
 	fmt.Println(string(rawerrInfo))
 }
 
-func filterInvisibleChar(in []byte) []byte{
+func filterInvisibleChar(in []byte) []byte {
 	var out []byte
-	for i:= 0; i < len(in); i++ {
+	for i := 0; i < len(in); i++ {
 		if in[i] < 32 || in[i] > 126 {
 			continue
 		}
 		out = append(out, in[i])
 	}
 
-   return out
+	return out
 }
 
 //签名值rsv：4E55CB10F11ECDD66807E303FA6A7797F9067D15AA2F4BC33BBA733BBF314B23324465CA8D3F89638756332CE3E556757277E158E90D1E39AA7D1014ABE331220000001C
@@ -225,7 +225,7 @@ func makeDERsignature(rb, sb []byte) []byte {
 //hash: 94049280DAC466B2A30B816F458F1642E770C0612F2A37F070E9B3ADE4ACC3D7
 //sig: 1C92FA936FE6B7D818B1B954E989EE6CACE1D76796A809386440C19DB037F6245F5E82B3216A1FA4540C1FC40537FA66B24EF9BB8764F12DEFD1AC61D9AE026E01
 //pk: 1BE2314BCA58B1365926C206B5A80AA4C68CF7FE60BF057A8C62299AB5C1A0FF7F6BFFC7C07ACB37FB9EE57D9D69CEBC6A65E89CBC90E5FC8FDD1E84375A8AF1
-    //1be2314bca58b1365926c206b5a80aa4c68cf7fe60bf057a8c62299ab5c1a0ff7f6bffc7c07acb37fb9ee57d9d69cebc6a65e89cbc90e5fc8fdd1e84375a8af1
+//1be2314bca58b1365926c206b5a80aa4c68cf7fe60bf057a8c62299ab5c1a0ff7f6bffc7c07acb37fb9ee57d9d69cebc6a65e89cbc90e5fc8fdd1e84375a8af1
 
 //ECDSA, 256 Bits (Prime Field)
 //Key pair:
@@ -251,7 +251,6 @@ func makeDERsignature(rb, sb []byte) []byte {
 //r=4e55cb10f11ecdd66807e303fa6a7797f9067d15aa2f4bc33bba733bbf314b23
 //s=cdbb9a3572c0769c78a9ccd31c1aa9894836fb8dc63b820215554e782453101f
 
-
 //4C4D145791FB81AE5F5CC6B8290E12AB73818B1EAAA42A95C26F488DFCBD6887
 //976481BDEBB48B2796A72FCB2A48624AC33FE0B294529054B015BD1B537C6CDF
 //
@@ -274,5 +273,3 @@ func Test_Ethsecp256k1_2(t *testing.T) {
 	fmt.Println(" recoveredAddr is ", recoveredAddr.String())
 
 }
-
-

@@ -17,7 +17,6 @@ package adapter
 //unsigned int *signatureLenPtr = &signatureLen;
 //unsigned int sigV = 0;
 //unsigned int *sigVPtr = &sigV;
-
 //int setupHSM()
 //{
 //    auto rt = SDF_OpenDevice(&g_hDev);
@@ -49,9 +48,9 @@ import (
 )
 
 const (
-	SDF_Success = C.int(0)
-	SM2IDSize   = C.uint(16)
-	AddrVerifyTypeChain33 = int(0)
+	SDF_Success            = C.int(0)
+	SM2IDSize              = C.uint(16)
+	AddrVerifyTypeChain33  = int(0)
 	AddrVerifyTypeEthereum = int(1)
 )
 
@@ -97,9 +96,8 @@ func SignSecp256k1(msg []byte, keyIndex int) (signatureR, signatureS []byte, sig
 	hash2sign := (*C.uchar)(C.CBytes(hash[:]))
 	defer C.free(unsafe.Pointer(hash2sign))
 
-
 	rt := C.TassECCPrivateKeySign_RFC(C.g_hSess, C.TA_ALG_ECC_SECP_256K1, C.uint(keyIndex), C.uint(256), C.skCipherByKek, C.uint(0), hash2sign, C.uint(32), C.sigVPtr, C.RSPtr, C.signatureLenPtr)
-    if SDF_Success != rt {
+	if SDF_Success != rt {
 		return nil, nil, 0, errors.New(fmt.Sprintf("TassECCPrivateKeySign failed %#08x", int(rt)))
 
 	}
@@ -162,7 +160,6 @@ func SignSM2Internal(msg []byte, keyIndex int) (signatureR, signatureS []byte, e
 	s := C.GoBytes(unsafe.Pointer(&sign.s[0]), C.int(64))
 	return r, s, nil
 }
-
 
 func MakeRSVsignature(rb, sb []byte, vb byte) []byte {
 	var signature []byte
