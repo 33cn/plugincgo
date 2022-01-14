@@ -65,7 +65,7 @@ func main() {
 func verifySecp256k1(keyIndex int) {
 	msg, _ := common.FromHex("456789")
 
-	r, s, v, err := adapter.SignSecp256k1(msg, keyIndex)
+	r, s, v, err := adapter.SignSecp256k1Msg(msg, keyIndex)
 
 	if err != nil {
 		panic("Failed to SignSecp256k1 due to:" + err.Error())
