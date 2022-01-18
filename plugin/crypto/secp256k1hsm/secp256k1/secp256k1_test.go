@@ -114,13 +114,14 @@ func Test_btcsecp256k1(t *testing.T) {
 	msg := []byte("456789")
 	priv, _ := btcSecp256k1.PrivKeyFromBytes(btcSecp256k1.S256(), common.FromHex("CC38546E9E659D15E6B4893F0AB32A06D103931A8230B0BDE71459D2B27D6944"))
 
-	for i := 0; i < 10; i++ {
+	for i := 0; i < 1; i++ {
 		sig, err := btcec.SignCompact(btcec.S256(), priv, crypto.Sha256(msg), true)
 		assert.Equal(t, nil, err)
 
 		pub, compressed, err := btcec.RecoverCompact(btcec.S256(), sig, crypto.Sha256(msg))
 		assert.Equal(t, nil, err)
 		fmt.Println("i is", i)
+		fmt.Println("The recoverd Uncompressed pubkey is", common.Bytes2Hex(pub.SerializeUncompressed()))
 		fmt.Println("The recoverd pubkey is", common.Bytes2Hex(pub.SerializeCompressed()))
 		fmt.Println("The compressed is", compressed)
 		fmt.Println("   ")
