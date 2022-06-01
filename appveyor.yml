@@ -14,16 +14,18 @@ clone_folder: c:\gopath\src\github.com\33cn\plugincgo
 
 environment:
   GOPATH: c:\gopath
+  DEPTESTBYPASS501: 1
 
 
 # set go version
-before_test:
-  - dir C:\mingw-w64\x86_64-6.3.0-posix-seh-rt_v5-rev1\mingw64
-  - set Path=c:\go116\bin;c:\gopath\bin;C:\mingw-w64\x86_64-6.3.0-posix-seh-rt_v5-rev1\mingw64\bin;C:\Program Files (x86)\Bazaar\;C:\Program Files\Mercurial\;%Path%
+install:
+  - dir C:\mingw-w64\x86_64-8.1.0-posix-seh-rt_v6-rev0\mingw64
+  - set Path=C:\go116\bin;C:\mingw-w64\x86_64-8.1.0-posix-seh-rt_v6-rev0\mingw64\bin;C:\Program Files (x86)\Bazaar\;C:\Program Files\Mercurial\;%Path%
   - gcc --version
   - set GOROOT=C:\go116
   - go version
   - go env
+  - set path
 
 test_script:
   - build.bat
