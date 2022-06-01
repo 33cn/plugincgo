@@ -25,7 +25,6 @@ install:
   - set GOROOT=C:\go116
   - go version
   - go env
-  - set path
 
 test_script:
   - build.bat
