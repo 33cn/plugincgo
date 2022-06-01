@@ -4,7 +4,6 @@ import (
 	"testing"
 	"unsafe"
 
-	"github.com/33cn/chain33/common/address"
 	lru "github.com/hashicorp/golang-lru"
 	"github.com/stretchr/testify/assert"
 )
@@ -17,22 +16,22 @@ var (
 )
 
 func Test_getJvmExector_fail(t *testing.T) {
-	address1 := &address.Address{}
-	envHandleUintptr := uintptr(unsafe.Pointer(address1))
+	var address1 string
+	envHandleUintptr := uintptr(unsafe.Pointer(&address1))
 	jvmsCached, _ = lru.New(1000)
 	_, ok := getJvmExector(envHandleUintptr)
 	assert.Equal(t, false, ok)
 
-	address2 := &address.Address{}
+	var address2 string
 
-	jvmsCached.Add(envHandleUintptr, address2)
+	jvmsCached.Add(envHandleUintptr, &address2)
 	_, ok = getJvmExector(envHandleUintptr)
 	assert.Equal(t, false, ok)
 }
 
 func Test_execFrozen_fail(t *testing.T) {
-	address1 := &address.Address{}
-	envHandleUintptr := uintptr(unsafe.Pointer(address1))
+	var address1 string
+	envHandleUintptr := uintptr(unsafe.Pointer(&address1))
 	jvmsCached, _ = lru.New(1000)
 	ok := execFrozen(opener, 100, envHandleUintptr)
 	assert.Equal(t, false, ok)
@@ -46,8 +45,8 @@ func Test_execFrozen_fail(t *testing.T) {
 }
 
 func Test_execActive_fail(t *testing.T) {
-	address1 := &address.Address{}
-	envHandleUintptr := uintptr(unsafe.Pointer(address1))
+	var address1 string
+	envHandleUintptr := uintptr(unsafe.Pointer(&address1))
 	jvmsCached, _ = lru.New(1000)
 	ok := execActive(opener, 100, envHandleUintptr)
 	assert.Equal(t, false, ok)
@@ -60,8 +59,8 @@ func Test_execActive_fail(t *testing.T) {
 }
 
 func Test_execTransfer_fail(t *testing.T) {
-	address1 := &address.Address{}
-	envHandleUintptr := uintptr(unsafe.Pointer(address1))
+	var address1 string
+	envHandleUintptr := uintptr(unsafe.Pointer(&address1))
 	jvmsCached, _ = lru.New(1000)
 	ok := execTransfer(opener, player, 100, envHandleUintptr)
 	assert.Equal(t, false, ok)
@@ -74,8 +73,8 @@ func Test_execTransfer_fail(t *testing.T) {
 }
 
 func Test_getFrom_fail(t *testing.T) {
-	address1 := &address.Address{}
-	envHandleUintptr := uintptr(unsafe.Pointer(address1))
+	var address1 string
+	envHandleUintptr := uintptr(unsafe.Pointer(&address1))
 	jvmsCached, _ = lru.New(1000)
 	from := getFrom(envHandleUintptr)
 	assert.Equal(t, "", from)
@@ -88,8 +87,8 @@ func Test_getFrom_fail(t *testing.T) {
 }
 
 func Test_getHeight_fail(t *testing.T) {
-	address1 := &address.Address{}
-	envHandleUintptr := uintptr(unsafe.Pointer(address1))
+	var address1 string
+	envHandleUintptr := uintptr(unsafe.Pointer(&address1))
 	jvmsCached, _ = lru.New(1000)
 	jvmsCached.Add(envHandleUintptr, envHandleUintptr)
 	height := getHeight(envHandleUintptr)
@@ -103,8 +102,8 @@ func Test_getHeight_fail(t *testing.T) {
 }
 
 func Test_stopTransWithErrInfo_fail(t *testing.T) {
-	address1 := &address.Address{}
-	envHandleUintptr := uintptr(unsafe.Pointer(address1))
+	var address1 string
+	envHandleUintptr := uintptr(unsafe.Pointer(&address1))
 	jvmsCached, _ = lru.New(1000)
 	jvmsCached.Add(envHandleUintptr, envHandleUintptr)
 	ok := stopTransWithErrInfo("err", envHandleUintptr)

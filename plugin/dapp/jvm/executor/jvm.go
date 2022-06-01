@@ -206,7 +206,7 @@ func (jvm *JVMExecutor) checkContractNameExists(req *jvmTypes.CheckJVMContractNa
 
 func (jvm *JVMExecutor) GetContractAddr() string {
 	if jvm.tx != nil {
-		return address.GetExecAddress(string(jvm.tx.Execer)).String()
+		return address.ExecAddress(string(jvm.tx.Execer))
 	}
-	return address.GetExecAddress(jvm.contract).String()
+	return address.ExecAddress(jvm.contract)
 }
