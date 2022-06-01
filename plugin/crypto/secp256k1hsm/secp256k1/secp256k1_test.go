@@ -2,10 +2,12 @@ package secp256k1
 
 import (
 	"fmt"
-	"github.com/btcsuite/btcd/btcec"
 	"testing"
 
+	"github.com/btcsuite/btcd/btcec"
+
 	goSh256 "crypto/sha256"
+
 	"gotest.tools/assert"
 
 	"github.com/33cn/chain33/common/crypto"

@@ -4,7 +4,6 @@ import (
 	"reflect"
 
 	"github.com/33cn/chain33/common"
-	"github.com/33cn/chain33/common/address"
 	"github.com/33cn/chain33/common/log/log15"
 	"github.com/33cn/chain33/types"
 )
@@ -60,7 +59,7 @@ const (
 // 目前这些日志只是在合约执行完成时进行打印，没有其它用途
 type ContractLog struct {
 	// 合约地址
-	Address address.Address
+	Address string
 	// 对应交易哈希
 	TxHash common.Hash
 	// 日志序号
@@ -73,7 +72,7 @@ type ContractLog struct {
 
 // PrintLog 合约日志打印格式
 func (log *ContractLog) PrintLog() {
-	log15.Debug("!Contract Log!", "Contract address", log.Address.String(), "TxHash", log.TxHash.Bytes(), "Log Index", log.Index, "Log Topics", log.Topics)
+	log15.Debug("!Contract Log!", "Contract address", log.Address, "TxHash", log.TxHash.Bytes(), "Log Index", log.Index, "Log Topics", log.Topics)
 }
 
 var (
