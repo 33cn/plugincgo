@@ -3,9 +3,9 @@ module github.com/33cn/plugincgo
 go 1.15
 
 require (
-	github.com/33cn/chain33 v0.0.0-20220321062711-f22a380945af
+	github.com/33cn/chain33 v1.67.3
 	github.com/33cn/libbyz-go v0.0.0-20200629120358-93000acb7a54
-	github.com/33cn/plugin v0.0.0-20220321084149-15fd7669ba4b
+	github.com/33cn/plugin v1.67.3
 	github.com/OneOfOne/xxhash v1.2.5 // indirect
 	github.com/btcsuite/btcd v0.22.0-beta
 	github.com/ethereum/go-ethereum v1.10.16
