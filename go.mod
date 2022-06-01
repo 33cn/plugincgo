@@ -1,6 +1,6 @@
 module github.com/33cn/plugincgo
 
-go 1.15
+go 1.16
 
 require (
 	github.com/33cn/chain33 v1.67.3
